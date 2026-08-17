@@ -23,30 +23,31 @@ const usePostgres = process.env.DATABASE_URL &&
   !process.env.DATABASE_URL.includes('[YOUR-PASSWORD]') &&
   !process.env.DATABASE_URL.includes('[YOUR_PASSWORD]');
 
+// Always initialize SQLite database as instant standby fallback
+console.log(`\n📁 Initializing Database Engine...\n   SQLite Database: ${dbFilePath}`);
+sqliteDb = new Database(dbFilePath);
+sqliteDb.pragma('foreign_keys = ON');
+sqliteDb.pragma('journal_mode = WAL');
+initOfflineSQLiteSchema(sqliteDb);
+
 if (usePostgres) {
   try {
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
-      connectionTimeoutMillis: 5000
+      connectionTimeoutMillis: 1500,
+      statement_timeout: 2000
     });
     pool.on('error', (err) => {
-      console.warn('⚠️ PostgreSQL Connection Notice:', err.message);
+      console.warn('⚠️ PostgreSQL Connection Notice (using local fallback):', err.message);
+      mode = 'sqlite';
     });
     mode = 'postgres';
     console.log('🔗 Configured for Remote Supabase PostgreSQL Connection.');
   } catch (e) {
-    console.warn('⚠️ Failed to initialize PostgreSQL pool. Falling back to Offline SQLite.');
+    console.warn('⚠️ Failed to initialize PostgreSQL pool. Using local database.');
     mode = 'sqlite';
   }
-}
-
-if (mode === 'sqlite') {
-  console.log(`\n📁 Operating in 100% Offline Mode.\n   SQLite Database: ${dbFilePath}\n`);
-  sqliteDb = new Database(dbFilePath);
-  sqliteDb.pragma('foreign_keys = ON');
-  sqliteDb.pragma('journal_mode = WAL');
-  initOfflineSQLiteSchema(sqliteDb);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -82,18 +83,8 @@ const query = async (text, params = []) => {
     try {
       return await pool.query(text, params);
     } catch (err) {
-      if (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.message?.includes('ENOTFOUND')) {
-        console.warn(`⚠️ PostgreSQL network connection failed (${err.message}). Seamlessly using active local database fallback.`);
-        mode = 'sqlite';
-        if (!sqliteDb) {
-          sqliteDb = new Database(dbFilePath);
-          sqliteDb.pragma('foreign_keys = ON');
-          sqliteDb.pragma('journal_mode = WAL');
-          initOfflineSQLiteSchema(sqliteDb);
-        }
-      } else {
-        throw err;
-      }
+      console.warn(`⚠️ Remote database connection timeout/notice (${err.message}). Using local database standby.`);
+      mode = 'sqlite';
     }
   }
 
