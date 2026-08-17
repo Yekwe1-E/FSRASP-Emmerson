@@ -79,12 +79,11 @@ function transformSQL(sql) {
 // Universal query function
 // ─────────────────────────────────────────────────────────────────────────────
 const query = async (text, params = []) => {
-  if (mode === 'postgres' && pool) {
+  if (usePostgres && pool) {
     try {
       return await pool.query(text, params);
     } catch (err) {
-      console.warn(`⚠️ Remote database connection timeout/notice (${err.message}). Using local database standby.`);
-      mode = 'sqlite';
+      console.warn(`⚠️ PostgreSQL query attempt notice (${err.message}). Executing query fallback...`);
     }
   }
 
