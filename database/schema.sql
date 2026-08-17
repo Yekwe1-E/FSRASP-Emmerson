@@ -375,7 +375,161 @@ INSERT INTO academic_sessions (session_name, is_current) VALUES
 ON CONFLICT (session_name) DO NOTHING;
 
 -- Super Admin User Seed (Password: AdminPass123! hashed via bcrypt)
--- Note: $2a$10$wB9Jz2hR6J/Y8D3/m8G9...
 INSERT INTO users (first_name, last_name, email, password_hash, role, staff_id, is_active, is_approved)
 VALUES ('Super', 'Admin', 'admin@ndu.edu.ng', '$2a$10$5sL6TqQZ68i2l132K03PBeYQ94Zz5V1Y/JzY3H63M4K3X33.X2W6e', 'super_admin', 'NDU-FSC-001', TRUE, TRUE)
 ON CONFLICT (email) DO NOTHING;
+
+-- -----------------------------------------------------------------------------
+-- ROW LEVEL SECURITY (RLS) POLICIES FOR SUPABASE
+-- -----------------------------------------------------------------------------
+ALTER TABLE departments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read departments" ON departments;
+CREATE POLICY "Allow public read departments" ON departments FOR SELECT USING (true);
+
+ALTER TABLE academic_levels ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read academic_levels" ON academic_levels;
+CREATE POLICY "Allow public read academic_levels" ON academic_levels FOR SELECT USING (true);
+
+ALTER TABLE semesters ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read semesters" ON semesters;
+CREATE POLICY "Allow public read semesters" ON semesters FOR SELECT USING (true);
+
+ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read courses" ON courses;
+CREATE POLICY "Allow public read courses" ON courses FOR SELECT USING (true);
+
+ALTER TABLE materials ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read materials" ON materials;
+CREATE POLICY "Allow public read materials" ON materials FOR SELECT USING (true);
+
+ALTER TABLE quizzes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read quizzes" ON quizzes;
+CREATE POLICY "Allow public read quizzes" ON quizzes FOR SELECT USING (true);
+
+-- -----------------------------------------------------------------------------
+-- SEED COURSES ACROSS ALL 8 DEPARTMENTS
+-- -----------------------------------------------------------------------------
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'CSC 111', 'Introduction to Computer Science & Algorithms', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'CSC' AND l.level_code = '100' AND s.code = 'SEM1'
+ON CONFLICT (course_code) DO NOTHING;
+
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'CSC 212', 'Object-Oriented Programming (C++ & Java)', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'CSC' AND l.level_code = '200' AND s.code = 'SEM2'
+ON CONFLICT (course_code) DO NOTHING;
+
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'CSC 311', 'Data Structures and Algorithms II', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'CSC' AND l.level_code = '300' AND s.code = 'SEM1'
+ON CONFLICT (course_code) DO NOTHING;
+
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'CSC 411', 'Operating Systems Architecture', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'CSC' AND l.level_code = '400' AND s.code = 'SEM1'
+ON CONFLICT (course_code) DO NOTHING;
+
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'MCB 211', 'General Microbiology I', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'MCB' AND l.level_code = '200' AND s.code = 'SEM1'
+ON CONFLICT (course_code) DO NOTHING;
+
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'BCH 201', 'General Biochemistry & Biomolecules', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'BCH' AND l.level_code = '200' AND s.code = 'SEM1'
+ON CONFLICT (course_code) DO NOTHING;
+
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'CHM 101', 'General Chemistry I', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'CHM' AND l.level_code = '100' AND s.code = 'SEM1'
+ON CONFLICT (course_code) DO NOTHING;
+
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'PHY 101', 'General Physics I - Mechanics & Hydrostatics', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'PHY' AND l.level_code = '100' AND s.code = 'SEM1'
+ON CONFLICT (course_code) DO NOTHING;
+
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'GLY 101', 'Introduction to Physical Geology', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'GLY' AND l.level_code = '100' AND s.code = 'SEM1'
+ON CONFLICT (course_code) DO NOTHING;
+
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'MTH 110', 'Elementary Mathematics I (Algebra & Trig)', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'MTH' AND l.level_code = '100' AND s.code = 'SEM1'
+ON CONFLICT (course_code) DO NOTHING;
+
+INSERT INTO courses (course_code, course_title, credit_units, department_id, level_id, semester_id)
+SELECT 'BIO 101', 'General Biology I - Cell & Organisms', 3, d.id, l.id, s.id
+FROM departments d, academic_levels l, semesters s
+WHERE d.code = 'BIO' AND l.level_code = '100' AND s.code = 'SEM1'
+ON CONFLICT (course_code) DO NOTHING;
+
+-- -----------------------------------------------------------------------------
+-- SEED LECTURE MATERIALS ACROSS ALL 8 DEPARTMENTS
+-- -----------------------------------------------------------------------------
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'CSC 111 Comprehensive Lecture Notes', 'Introduction to computer science fundamentals, boolean logic, and algorithms.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lecture Notes', '/uploads/CSC111_Notes.pdf', 'CSC111_Notes.pdf', 'pdf', 2450000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'CSC 111' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'MCB 211 General Microbiology Lab Manual', 'Practical guide for general microbiology techniques and microscopy.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lab Guides', '/uploads/MCB211_Manual.pdf', 'MCB211_Manual.pdf', 'pdf', 1850000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'MCB 211' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'CSC 212 OOP in Java & C++ Guide', 'Object oriented principles, inheritance, polymorphism, and exception handling.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lecture Notes', '/uploads/CSC212_Notes.pdf', 'CSC212_Notes.pdf', 'pdf', 2100000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'CSC 212' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'CSC 311 Data Structures & Algorithms II Handbook', 'Advanced tree structures, graph traversal, sorting algorithms, and dynamic programming.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lecture Notes', '/uploads/CSC311_Notes.pdf', 'CSC311_Notes.pdf', 'pdf', 3200000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'CSC 311' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'CSC 411 Operating Systems Architecture Notes', 'Process management, thread synchronization, memory management, and file systems.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lecture Notes', '/uploads/CSC411_Notes.pdf', 'CSC411_Notes.pdf', 'pdf', 2900000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'CSC 411' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'BCH 201 Biomolecules & Cell Biochemistry', 'Structure and function of proteins, nucleic acids, carbohydrates, and lipids.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lecture Notes', '/uploads/BCH201_Notes.pdf', 'BCH201_Notes.pdf', 'pdf', 2700000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'BCH 201' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'CHM 101 General Chemistry Module I', 'Atomic structure, stoichiometry, chemical equilibrium, and periodic table trends.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lecture Notes', '/uploads/CHM101_Module.pdf', 'CHM101_Module.pdf', 'pdf', 2300000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'CHM 101' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'PHY 101 Mechanics & Hydrostatics Lecture Notes', 'Vectors, Newton laws of motion, work-energy theorem, and fluid dynamics.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lecture Notes', '/uploads/PHY101_Notes.pdf', 'PHY101_Notes.pdf', 'pdf', 2800000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'PHY 101' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'GLY 101 Physical Geology Field Guide', 'Identification of igneous, sedimentary, metamorphic rocks, and plate tectonics.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lab Guides', '/uploads/GLY101_Guide.pdf', 'GLY101_Guide.pdf', 'pdf', 3100000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'GLY 101' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'MTH 110 Algebra & Trigonometry Handout', 'Polynomials, binomial theorem, complex numbers, and trigonometric identities.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lecture Notes', '/uploads/MTH110_Handout.pdf', 'MTH110_Handout.pdf', 'pdf', 2600000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'MTH 110' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+
+INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+SELECT 'BIO 101 General Biology I Practical Manual', 'Microscopic observation of plant/animal tissues, cell division, and enzyme activity.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lab Guides', '/uploads/BIO101_Manual.pdf', 'BIO101_Manual.pdf', 'pdf', 2400000, 'approved'
+FROM courses c, academic_sessions s, users u
+WHERE c.course_code = 'BIO 101' AND s.session_name = '2024/2025' AND u.email = 'admin@ndu.edu.ng';
+

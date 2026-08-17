@@ -28,9 +28,10 @@
         <li><a href="quizzes.html" class="nav-link active">Quizzes</a></li>
       </ul>
 
-      <div style="display: flex; align-items: center; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
         <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
         <div id="nav-auth-container"></div>
+        <button onclick="toggleMobileMenu()" class="mobile-nav-toggle" title="Toggle Navigation Menu">☰</button>
       </div>
     </div>
   </nav>
@@ -43,7 +44,7 @@
         <h2>Student Self-Assessment Quizzes</h2>
         <p class="text-muted" style="font-size: 0.95rem;">Test your knowledge with course quizzes, instant scoring, and complete explanations.</p>
       </div>
-      <div>
+      <div id="create-quiz-btn-container" style="display: none;">
         <a href="create-quiz.html" class="btn btn-primary">
           <span>➕</span> Create New Quiz (Lecturers)
         </a>

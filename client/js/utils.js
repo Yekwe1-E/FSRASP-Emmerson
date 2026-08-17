@@ -26,6 +26,14 @@ const updateThemeToggleIcons = (theme) => {
   });
 };
 
+// Mobile Navigation Toggle Controller
+const toggleMobileMenu = () => {
+  const navLinks = document.querySelector('.nav-links');
+  if (navLinks) {
+    navLinks.classList.toggle('mobile-open');
+  }
+};
+
 // Toast Notification Manager
 const showToast = (message, type = 'info', duration = 4000) => {
   let container = document.getElementById('toast-container');

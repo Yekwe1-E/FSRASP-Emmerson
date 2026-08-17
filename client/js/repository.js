@@ -28,6 +28,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load Dropdown Options for Filters
 const initRepositoryFilters = async () => {
+  const uploadBtnContainer = document.getElementById('upload-material-btn-container');
+  if (uploadBtnContainer) {
+    const session = getUserSession();
+    if (session && ['lecturer', 'faculty_admin', 'super_admin'].includes(session.user.role)) {
+      uploadBtnContainer.style.display = 'block';
+    } else {
+      uploadBtnContainer.style.display = 'none';
+    }
+  }
+
   const deptSelect = document.getElementById('filter-department');
   const levelSelect = document.getElementById('filter-level');
   const semesterSelect = document.getElementById('filter-semester');

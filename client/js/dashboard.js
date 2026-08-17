@@ -5,11 +5,36 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const pagePath = window.location.pathname;
+  const session = getUserSession();
 
-  if (pagePath.includes('dashboard-admin.html')) loadAdminDashboard();
-  if (pagePath.includes('dashboard-faculty.html')) loadFacultyDashboard();
-  if (pagePath.includes('dashboard-lecturer.html')) loadLecturerDashboard();
-  if (pagePath.includes('dashboard-student.html')) loadStudentDashboard();
+  if (pagePath.includes('dashboard-admin.html')) {
+    if (!session || session.user.role !== 'super_admin') {
+      showToast('Unauthorized access to Admin Dashboard.', 'danger');
+      return setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+    }
+    loadAdminDashboard();
+  }
+  if (pagePath.includes('dashboard-faculty.html')) {
+    if (!session || (session.user.role !== 'faculty_admin' && session.user.role !== 'super_admin')) {
+      showToast('Unauthorized access to Faculty Dashboard.', 'danger');
+      return setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+    }
+    loadFacultyDashboard();
+  }
+  if (pagePath.includes('dashboard-lecturer.html')) {
+    if (!session || (session.user.role !== 'lecturer' && session.user.role !== 'faculty_admin' && session.user.role !== 'super_admin')) {
+      showToast('Unauthorized access to Lecturer Dashboard.', 'danger');
+      return setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+    }
+    loadLecturerDashboard();
+  }
+  if (pagePath.includes('dashboard-student.html')) {
+    if (!session) {
+      showToast('Please login to access student dashboard.', 'warning');
+      return setTimeout(() => { window.location.href = 'auth.html'; }, 1500);
+    }
+    loadStudentDashboard();
+  }
 });
 
 // SUPER ADMIN DASHBOARD

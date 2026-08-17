@@ -68,6 +68,50 @@
   border-radius: var(--radius-pill);
 }
 
+.mobile-nav-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 1.25rem;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-fast);
+}
+
+.mobile-nav-toggle:hover {
+  background-color: var(--border-color);
+}
+
+@media (max-width: 768px) {
+  .mobile-nav-toggle {
+    display: flex;
+  }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    flex-direction: column;
+    padding: 1.25rem 1.5rem;
+    gap: 1rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 999;
+  }
+
+  .nav-links.mobile-open {
+    display: flex;
+  }
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -153,6 +197,13 @@
   background-color: var(--border-color);
 }
 
+@media (max-width: 480px) {
+  .btn:not(.btn-sm):not(.btn-icon):not(.theme-toggle):not(.mobile-nav-toggle) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Theme Switcher Button */
 .theme-toggle {
   cursor: pointer;
@@ -187,6 +238,12 @@
 .card-hoverable:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 1.15rem;
+  }
 }
 
 .card-header {
@@ -249,6 +306,13 @@
 .badge-accent { background-color: var(--accent-light); color: var(--accent); }
 .badge-danger { background-color: var(--danger-light); color: var(--danger); }
 .badge-warning { background-color: var(--warning-light); color: var(--warning); }
+
+/* Responsive Table Wrapper */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
 /* Modals */
 .modal-backdrop {
@@ -327,6 +391,19 @@
   to { transform: translateX(0); opacity: 1; }
 }
 
+@media (max-width: 640px) {
+  #toast-container {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    width: calc(100% - 2rem);
+  }
+  .toast {
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+
 /* Hero Section */
 .hero {
   padding: 5rem 0 4rem;
@@ -345,8 +422,12 @@
 }
 
 @media (max-width: 768px) {
-  .hero-title { font-size: 2.1rem; }
-  .nav-links { display: none; }
+  .hero {
+    padding: 3rem 0 2rem;
+  }
+  .hero-title {
+    font-size: 2rem;
+  }
 }
 
 /* Footer */

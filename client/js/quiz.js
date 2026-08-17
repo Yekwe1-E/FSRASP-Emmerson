@@ -23,6 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // Load Available Quizzes List
 const loadQuizzesList = async () => {
   const container = document.getElementById('quizzes-list-container');
+  const createBtnContainer = document.getElementById('create-quiz-btn-container');
+
+  if (createBtnContainer) {
+    const session = getUserSession();
+    if (session && ['lecturer', 'faculty_admin', 'super_admin'].includes(session.user.role)) {
+      createBtnContainer.style.display = 'block';
+    } else {
+      createBtnContainer.style.display = 'none';
+    }
+  }
+
   if (!container) return;
 
   container.innerHTML = `
@@ -416,6 +427,16 @@ const initCreateQuizForm = async () => {
   const courseSelect = document.getElementById('quiz-course');
 
   if (!form) return;
+
+  // Check user authentication & authorization role
+  const session = getUserSession();
+  if (!session || !['lecturer', 'faculty_admin', 'super_admin'].includes(session.user.role)) {
+    showToast("Access Denied: Only Lecturers and Admins are authorized to create quizzes.", "danger");
+    setTimeout(() => {
+      window.location.href = 'quizzes.html';
+    }, 1500);
+    return;
+  }
 
   try {
     const coursesRes = await apiCall('/courses');
