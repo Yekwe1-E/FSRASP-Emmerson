@@ -414,31 +414,67 @@ function initOfflineSQLiteSchema(db) {
               VALUES (?,?,?,?,?,?,?,?,?,1,1)`)
     .run('usr-stu-1', 'student@ndu.edu.ng', hash, 'Tari', 'Ebi', 'student', 'dept-1', 'lvl-300', 'NDU/2022/CSC/015');
 
-  // Courses
-  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
-              VALUES (?,?,?,?,?,?,?,?)`)
-    .run('crs-csc111', 'CSC 111', 'Introduction to Computer Science & Algorithms', 3, 'dept-1', 'lvl-100', 'sem-1', 'usr-lec-1');
+  // Courses (All 8 Departments)
+  const addCourse = (id, code, title, units, dept, lvl, sem) => {
+    db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
+                VALUES (?,?,?,?,?,?,?,?)`).run(id, code, title, units, dept, lvl, sem, 'usr-lec-1');
+  };
 
-  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
-              VALUES (?,?,?,?,?,?,?,?)`)
-    .run('crs-csc212', 'CSC 212', 'Object-Oriented Programming', 3, 'dept-1', 'lvl-200', 'sem-2', 'usr-lec-1');
+  // Computer Science
+  addCourse('crs-csc111', 'CSC 111', 'Introduction to Computer Science & Algorithms', 3, 'dept-1', 'lvl-100', 'sem-1');
+  addCourse('crs-csc212', 'CSC 212', 'Object-Oriented Programming (C++ & Java)', 3, 'dept-1', 'lvl-200', 'sem-2');
+  addCourse('crs-csc311', 'CSC 311', 'Data Structures and Algorithms II', 3, 'dept-1', 'lvl-300', 'sem-1');
+  addCourse('crs-csc411', 'CSC 411', 'Operating Systems Architecture', 3, 'dept-1', 'lvl-400', 'sem-1');
+  addCourse('crs-csc415', 'CSC 415', 'Computer Systems Performance & Evaluation', 3, 'dept-1', 'lvl-400', 'sem-1');
 
-  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
-              VALUES (?,?,?,?,?,?,?,?)`)
-    .run('crs-csc311', 'CSC 311', 'Data Structures and Algorithms II', 3, 'dept-1', 'lvl-300', 'sem-1', 'usr-lec-1');
+  // Microbiology
+  addCourse('crs-mcb211', 'MCB 211', 'General Microbiology I', 3, 'dept-2', 'lvl-200', 'sem-1');
+  addCourse('crs-mcb312', 'MCB 312', 'Environmental & Aquatic Microbiology', 3, 'dept-2', 'lvl-300', 'sem-2');
+  addCourse('crs-mcb411', 'MCB 411', 'Medical Microbiology & Diagnostic Pathology', 3, 'dept-2', 'lvl-400', 'sem-1');
 
-  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
-              VALUES (?,?,?,?,?,?,?,?)`)
-    .run('crs-mcb211', 'MCB 211', 'General Microbiology I', 3, 'dept-2', 'lvl-200', 'sem-1', 'usr-lec-1');
+  // Biochemistry
+  addCourse('crs-bch201', 'BCH 201', 'General Biochemistry & Biomolecules', 3, 'dept-3', 'lvl-200', 'sem-1');
+  addCourse('crs-bch311', 'BCH 311', 'Enzymology & Intermediary Metabolism', 3, 'dept-3', 'lvl-300', 'sem-1');
 
-  // Sample Materials Seed
-  db.prepare(`INSERT OR IGNORE INTO materials (id, title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
-              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run('mat-1', 'CSC 111 Comprehensive Lecture Notes', 'Introduction to computer science fundamentals, boolean logic, and algorithms.', 'crs-csc111', 'dept-1', 'lvl-100', 'sem-1', 'sess-2025-2026', 'usr-lec-1', 'Lecture Notes', '/uploads/CSC111_Notes.pdf', 'CSC/100L/CSC111_Notes.pdf', 'pdf', 2450000, 'approved');
+  // Pure & Applied Chemistry
+  addCourse('crs-chm101', 'CHM 101', 'General Chemistry I', 3, 'dept-4', 'lvl-100', 'sem-1');
+  addCourse('crs-chm211', 'CHM 211', 'Organic Chemistry I & Mechanisms', 3, 'dept-4', 'lvl-200', 'sem-1');
 
-  db.prepare(`INSERT OR IGNORE INTO materials (id, title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
-              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run('mat-2', 'MCB 211 General Microbiology Manual', 'Practical guide for general microbiology techniques and microscopy.', 'crs-mcb211', 'dept-2', 'lvl-200', 'sem-1', 'sess-2025-2026', 'usr-lec-1', 'Lab Guides', '/uploads/MCB211_Manual.pdf', 'MCB/200L/MCB211_Manual.pdf', 'pdf', 1850000, 'approved');
+  // Physics
+  addCourse('crs-phy101', 'PHY 101', 'General Physics I - Mechanics & Hydrostatics', 3, 'dept-5', 'lvl-100', 'sem-1');
+  addCourse('crs-phy211', 'PHY 211', 'Electromagnetism & Circuit Theory', 3, 'dept-5', 'lvl-200', 'sem-1');
+
+  // Geology
+  addCourse('crs-gly101', 'GLY 101', 'Introduction to Physical Geology', 3, 'dept-6', 'lvl-100', 'sem-1');
+  addCourse('crs-gly315', 'GLY 315', 'Structural Geology & Tectonics', 3, 'dept-6', 'lvl-300', 'sem-1');
+
+  // Mathematics & Statistics
+  addCourse('crs-mth110', 'MTH 110', 'Elementary Mathematics I (Algebra & Trig)', 3, 'dept-7', 'lvl-100', 'sem-1');
+  addCourse('crs-mth211', 'MTH 211', 'Mathematical Methods I', 3, 'dept-7', 'lvl-200', 'sem-1');
+
+  // Biological Sciences
+  addCourse('crs-bio101', 'BIO 101', 'General Biology I - Cell & Organisms', 3, 'dept-8', 'lvl-100', 'sem-1');
+  addCourse('crs-bio211', 'BIO 211', 'Cell Biology & Genetics', 3, 'dept-8', 'lvl-200', 'sem-1');
+
+  // Materials Seed (Across All Departments)
+  const addMat = (id, title, desc, course, dept, lvl, sem, cat, fileUrl, filePath) => {
+    db.prepare(`INSERT OR IGNORE INTO materials (id, title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .run(id, title, desc, course, dept, lvl, sem, 'sess-2024-2025', 'usr-lec-1', cat, fileUrl, filePath, 'pdf', 2450000, 'approved');
+  };
+
+  addMat('mat-1', 'CSC 111 Comprehensive Lecture Notes', 'Introduction to computer science fundamentals, boolean logic, and algorithms.', 'crs-csc111', 'dept-1', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/CSC111_Notes.pdf', 'CSC/100L/CSC111_Notes.pdf');
+  addMat('mat-2', 'MCB 211 General Microbiology Lab Manual', 'Practical guide for general microbiology techniques and microscopy.', 'crs-mcb211', 'dept-2', 'lvl-200', 'sem-1', 'Lab Guides', '/uploads/MCB211_Manual.pdf', 'MCB/200L/MCB211_Manual.pdf');
+  addMat('mat-3', 'CSC 212 OOP in Java & C++ Guide', 'Object oriented principles, inheritance, polymorphism, and exception handling.', 'crs-csc212', 'dept-1', 'lvl-200', 'sem-2', 'Lecture Notes', '/uploads/CSC212_Notes.pdf', 'CSC/200L/CSC212_Notes.pdf');
+  addMat('mat-4', 'CSC 311 Data Structures & Algorithms II Handbook', 'Advanced tree structures, graph traversal, sorting algorithms, and dynamic programming.', 'crs-csc311', 'dept-1', 'lvl-300', 'sem-1', 'Lecture Notes', '/uploads/CSC311_Notes.pdf', 'CSC/300L/CSC311_Notes.pdf');
+  addMat('mat-5', 'CSC 411 Operating Systems Architecture Notes', 'Process management, thread synchronization, memory management, and file systems.', 'crs-csc411', 'dept-1', 'lvl-400', 'sem-1', 'Lecture Notes', '/uploads/CSC411_Notes.pdf', 'CSC/400L/CSC411_Notes.pdf');
+  addMat('mat-6', 'CSC 415 Computer Performance Evaluation Past Questions', '2021-2024 Past Examination Questions with Worked Solutions.', 'crs-csc415', 'dept-1', 'lvl-400', 'sem-1', 'Past Questions', '/uploads/CSC415_Past_Questions.pdf', 'CSC/400L/CSC415_Past_Questions.pdf');
+  addMat('mat-7', 'BCH 201 Biomolecules & Cell Biochemistry', 'Structure and function of proteins, nucleic acids, carbohydrates, and lipids.', 'crs-bch201', 'dept-3', 'lvl-200', 'sem-1', 'Lecture Notes', '/uploads/BCH201_Notes.pdf', 'BCH/200L/BCH201_Notes.pdf');
+  addMat('mat-8', 'CHM 101 General Chemistry Module I', 'Atomic structure, stoichiometry, chemical equilibrium, and periodic table trends.', 'crs-chm101', 'dept-4', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/CHM101_Module.pdf', 'CHM/100L/CHM101_Module.pdf');
+  addMat('mat-9', 'PHY 101 Mechanics & Hydrostatics Lecture Notes', 'Vectors, Newton laws of motion, work-energy theorem, and fluid dynamics.', 'crs-phy101', 'dept-5', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/PHY101_Notes.pdf', 'PHY/100L/PHY101_Notes.pdf');
+  addMat('mat-10', 'GLY 101 Physical Geology Field Guide', 'Identification of igneous, sedimentary, metamorphic rocks, and plate tectonics.', 'crs-gly101', 'dept-6', 'lvl-100', 'sem-1', 'Lab Guides', '/uploads/GLY101_Guide.pdf', 'GLY/100L/GLY101_Guide.pdf');
+  addMat('mat-11', 'MTH 110 Algebra & Trigonometry Handout', 'Polynomials, binomial theorem, complex numbers, and trigonometric identities.', 'crs-mth110', 'dept-7', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/MTH110_Handout.pdf', 'MTH/100L/MTH110_Handout.pdf');
+  addMat('mat-12', 'BIO 101 General Biology I Practical Manual', 'Microscopic observation of plant/animal tissues, cell division, and enzyme activity.', 'crs-bio101', 'dept-8', 'lvl-100', 'sem-1', 'Lab Guides', '/uploads/BIO101_Manual.pdf', 'BIO/100L/BIO101_Manual.pdf');
 
   // Sample Quiz
   db.prepare(`INSERT OR IGNORE INTO quizzes (id,title,description,course_id,creator_id,duration_minutes,total_marks,pass_percentage,max_attempts)
