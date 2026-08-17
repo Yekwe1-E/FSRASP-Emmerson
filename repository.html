@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academic Repository - FSARAP | Niger Delta University</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    .level-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--border-color);
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+    }
+    .level-tab {
+      padding: 0.65rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      white-space: nowrap;
+      transition: all var(--transition-fast);
+    }
+    .level-tab.active, .level-tab:hover {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .filter-panel {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      position: sticky;
+      top: 90px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container flex items-center justify-between">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-badge">NDU</div>
+        <div>
+          <span>FSARAP</span>
+          <span style="font-size: 0.75rem; font-weight: 500; display: block; color: var(--text-muted);">Faculty of Science</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="repository.html" class="nav-link active">Repository</a></li>
+        <li><a href="quizzes.html" class="nav-link">Quizzes</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <div id="nav-auth-container"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Repository Header Banner -->
+  <section style="padding: 2.5rem 0 1.5rem; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color);">
+    <div class="container">
+      <div class="flex justify-between items-center mb-3">
+        <div>
+          <span class="badge badge-primary mb-1">Central Digital Repository</span>
+          <h2>Faculty of Science Lecture Materials</h2>
+          <p class="text-muted" style="font-size: 0.95rem;">Browse approved lecture notes, practical manuals, past questions, and lab guides.</p>
+        </div>
+        <div id="upload-material-btn-container" style="display: none;">
+          <a href="upload-material.html" class="btn btn-primary">
+            <span>📤</span> Upload Material
+          </a>
+        </div>
+      </div>
+
+      <!-- Level Tabs -->
+      <div class="level-tabs">
+        <div class="level-tab active" data-level="" onclick="setLevelFilter('')">All Levels</div>
+        <div class="level-tab" data-level="100" onclick="setLevelFilter('100')">100 Level</div>
+        <div class="level-tab" data-level="200" onclick="setLevelFilter('200')">200 Level</div>
+        <div class="level-tab" data-level="300" onclick="setLevelFilter('300')">300 Level</div>
+        <div class="level-tab" data-level="400" onclick="setLevelFilter('400')">400 Level</div>
+        <div class="level-tab" data-level="500" onclick="setLevelFilter('500')">500 Level</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Repository Main Grid & Filter Sidebar -->
+  <main style="padding: 3rem 0;">
+    <div class="container">
+      <div class="grid grid-cols-4 gap-3">
+        
+        <!-- Filter Panel Sidebar -->
+        <aside>
+          <div class="filter-panel">
+            <h3 class="mb-3" style="font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between;">
+              <span>🎛️ Filter Materials</span>
+              <button onclick="resetFilters()" class="btn btn-outline btn-sm" style="font-size: 0.75rem;">Reset</button>
+            </h3>
+
+            <div class="form-group">
+              <label class="form-label" for="search-input">Search Keywords</label>
+              <input type="text" id="search-input" class="form-control" placeholder="Course code, title, topic..." onkeyup="if(event.key === 'Enter') applyFilters()">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="filter-department">Department</label>
+              <select id="filter-department" class="form-select" onchange="applyFilters()">
+                <option value="">All Departments</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="filter-level">Academic Level</label>
+              <select id="filter-level" class="form-select" onchange="applyFilters()">
+                <option value="">All Levels</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="filter-semester">Semester</label>
+              <select id="filter-semester" class="form-select" onchange="applyFilters()">
+                <option value="">All Semesters</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="filter-category">Material Category</label>
+              <select id="filter-category" class="form-select" onchange="applyFilters()">
+                <option value="">All Categories</option>
+                <option value="Lecture Notes">Lecture Notes</option>
+                <option value="Practical Manual">Practical Manual</option>
+                <option value="Lab Guide">Lab Guide</option>
+                <option value="Past Questions">Past Questions</option>
+                <option value="Course Outline">Course Outline</option>
+                <option value="Tutorial">Tutorial</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="filter-filetype">File Format</label>
+              <select id="filter-filetype" class="form-select" onchange="applyFilters()">
+                <option value="">All Formats</option>
+                <option value="pdf">PDF Document (.pdf)</option>
+                <option value="docx">Word Document (.docx)</option>
+                <option value="pptx">PowerPoint (.pptx)</option>
+                <option value="zip">ZIP Archive (.zip)</option>
+              </select>
+            </div>
+
+            <button onclick="applyFilters()" class="btn btn-primary" style="width: 100%;">Apply Filters</button>
+          </div>
+        </aside>
+
+        <!-- Materials Listing Results -->
+        <section style="grid-column: span 3;">
+          <div class="flex justify-between items-center mb-3">
+            <span id="results-count" class="font-semibold text-muted" style="font-size: 0.9rem;">Loading materials...</span>
+            <div style="font-size: 0.85rem;" class="text-muted">
+              Updated in real-time from Supabase Storage
+            </div>
+          </div>
+
+          <!-- Dynamic Materials Cards Grid -->
+          <div id="materials-grid" class="grid grid-cols-3 gap-2">
+            <!-- Populated via repository.js -->
+          </div>
+
+          <!-- Pagination -->
+          <div id="pagination-container"></div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container text-center text-muted" style="font-size: 0.85rem;">
+      &copy; 2026 Faculty of Science, Niger Delta University (NDU).
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/repository.js"></script>
+</body>
+</html>
