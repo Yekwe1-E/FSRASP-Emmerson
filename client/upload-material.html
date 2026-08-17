@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Lecture Material - FSARAP | Niger Delta University</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container flex items-center justify-between">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-badge">NDU</div>
+        <div>
+          <span>FSARAP</span>
+          <span style="font-size: 0.75rem; font-weight: 500; display: block; color: var(--text-muted);">Faculty of Science</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="repository.html" class="nav-link">Repository</a></li>
+        <li><a href="quizzes.html" class="nav-link">Quizzes</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <div id="nav-auth-container"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Upload Main View -->
+  <main style="padding: 3.5rem 0;">
+    <div class="container" style="max-width: 750px;">
+      
+      <div class="card" style="padding: 2.5rem;">
+        <div class="mb-3">
+          <span class="badge badge-primary mb-1">Lecturer & Admin Portal</span>
+          <h2>Upload Academic Material</h2>
+          <p class="text-muted" style="font-size: 0.9rem;">Upload lecture notes, practical manuals, or lab guides to Supabase Storage.</p>
+        </div>
+
+        <form id="material-upload-form" enctype="multipart/form-data">
+          
+          <div class="form-group">
+            <label class="form-label" for="upload-title">Material Title</label>
+            <input type="text" id="upload-title" name="title" class="form-control" placeholder="e.g., CSC 111: Introduction to Computer Science Lecture Notes (Week 1-4)" required>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1">
+            <div class="form-group">
+              <label class="form-label" for="upload-department">Department</label>
+              <select id="upload-department" name="department_id" class="form-select" required>
+                <option value="">Loading Departments...</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="upload-level">Academic Level</label>
+              <select id="upload-level" name="level_id" class="form-select" required>
+                <option value="">Loading Levels...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1">
+            <div class="form-group">
+              <label class="form-label" for="upload-semester">Semester</label>
+              <select id="upload-semester" name="semester_id" class="form-select" required>
+                <option value="">Loading Semesters...</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="upload-session">Academic Session</label>
+              <select id="upload-session" name="session_id" class="form-select" required>
+                <option value="">Loading Sessions...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1">
+            <div class="form-group">
+              <label class="form-label" for="upload-course">Course Code</label>
+              <select id="upload-course" name="course_id" class="form-select" required>
+                <option value="">Loading Courses...</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="upload-category">Material Category</label>
+              <select id="upload-category" name="category" class="form-select" required>
+                <option value="Lecture Notes">Lecture Notes</option>
+                <option value="Practical Manual">Practical Manual</option>
+                <option value="Lab Guide">Lab Guide</option>
+                <option value="Past Questions">Past Questions</option>
+                <option value="Course Outline">Course Outline</option>
+                <option value="Tutorial">Tutorial</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="upload-description">Description & Learning Objectives</label>
+            <textarea id="upload-description" name="description" class="form-control" rows="3" placeholder="Provide a summary of the contents, topics covered, or instructions for students..."></textarea>
+          </div>
+
+          <!-- File Input -->
+          <div class="form-group">
+            <label class="form-label" for="material-file">Attach Material File (PDF, DOCX, PPTX, ZIP, PNG, JPG)</label>
+            <input type="file" id="material-file" name="material_file" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.png,.jpg,.jpeg" required style="padding: 0.5rem;">
+            <span class="form-text">Maximum file size: 100MB. Files are stored securely in Supabase Storage.</span>
+          </div>
+
+          <div class="flex justify-between items-center mt-3">
+            <a href="repository.html" class="btn btn-outline">Cancel</a>
+            <button type="submit" class="btn btn-primary btn-lg">Upload Material</button>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/repository.js"></script>
+</body>
+</html>

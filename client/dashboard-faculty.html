@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Admin Dashboard - FSARAP | Niger Delta University</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container flex items-center justify-between">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-badge">NDU</div>
+        <div>
+          <span>FSARAP</span>
+          <span style="font-size: 0.75rem; font-weight: 500; display: block; color: var(--text-muted);">Faculty Admin Portal</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="repository.html" class="nav-link">Repository</a></li>
+        <li><a href="quizzes.html" class="nav-link">Quizzes</a></li>
+        <li><a href="dashboard-faculty.html" class="nav-link active">Faculty Dashboard</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <div id="nav-auth-container"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Faculty Main View -->
+  <main style="padding: 3rem 0;">
+    <div class="container">
+      
+      <div class="mb-4">
+        <span class="badge badge-secondary mb-1">Faculty Administrator Hub</span>
+        <h2>Faculty of Science Departments Overview</h2>
+      </div>
+
+      <div id="faculty-depts-grid" class="grid grid-cols-4 gap-3">
+        <!-- Populated via dashboard.js -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

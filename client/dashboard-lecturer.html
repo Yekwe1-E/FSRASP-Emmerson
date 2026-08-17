@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecturer Dashboard - FSARAP | Niger Delta University</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container flex items-center justify-between">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-badge">NDU</div>
+        <div>
+          <span>FSARAP</span>
+          <span style="font-size: 0.75rem; font-weight: 500; display: block; color: var(--text-muted);">Lecturer Portal</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="repository.html" class="nav-link">Repository</a></li>
+        <li><a href="quizzes.html" class="nav-link">Quizzes</a></li>
+        <li><a href="dashboard-lecturer.html" class="nav-link active">Dashboard</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <div id="nav-auth-container"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Lecturer Dashboard View -->
+  <main style="padding: 3rem 0;">
+    <div class="container">
+      
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <span class="badge badge-primary mb-1">Academic Resource Management</span>
+          <h2>Lecturer Dashboard</h2>
+        </div>
+        <div class="flex gap-2">
+          <a href="upload-material.html" class="btn btn-primary">📤 Upload New Material</a>
+          <a href="create-quiz.html" class="btn btn-accent">📝 Create Quiz</a>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-3 gap-3 mb-4 text-center">
+        <div class="card">
+          <h3 id="stat-my-uploads" style="font-size: 2.2rem; color: var(--primary);">0</h3>
+          <p class="text-muted font-semibold">My Uploaded Materials</p>
+        </div>
+        <div class="card">
+          <h3 id="stat-my-downloads" style="font-size: 2.2rem; color: var(--secondary);">0</h3>
+          <p class="text-muted font-semibold">Total Student Downloads</p>
+        </div>
+        <div class="card">
+          <h3 id="stat-approved-uploads" style="font-size: 2.2rem; color: var(--accent);">0</h3>
+          <p class="text-muted font-semibold">Approved Files</p>
+        </div>
+      </div>
+
+      <!-- Materials Uploaded List -->
+      <div class="card mb-4" style="padding: 1.5rem;">
+        <h3 class="mb-3" style="font-size: 1.2rem;">My Uploaded Lecture Materials</h3>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                <th style="padding: 0.75rem;">Material Title</th>
+                <th style="padding: 0.75rem;">Course</th>
+                <th style="padding: 0.75rem;">Downloads</th>
+                <th style="padding: 0.75rem;">Status</th>
+                <th style="padding: 0.75rem;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="lecturer-materials-table">
+              <!-- Populated via dashboard.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

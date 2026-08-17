@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication - FSARAP | Niger Delta University</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  
+  <style>
+    .auth-wrapper {
+      min-height: calc(100vh - 140px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 480px;
+    }
+    .auth-tabs {
+      display: flex;
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+    .auth-tab {
+      flex: 1;
+      text-align: center;
+      padding: 0.75rem 0;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all var(--transition-fast);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+    }
+    .auth-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .role-switcher {
+      display: flex;
+      gap: 1rem;
+      background-color: var(--bg-main);
+      padding: 0.5rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1.25rem;
+    }
+    .role-option {
+      flex: 1;
+      text-align: center;
+    }
+    .role-option input {
+      display: none;
+    }
+    .role-option label {
+      display: block;
+      padding: 0.5rem 0;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      transition: all var(--transition-fast);
+    }
+    .role-option input:checked + label {
+      background-color: var(--bg-card);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container flex items-center justify-between">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-badge">NDU</div>
+        <div>
+          <span>FSARAP</span>
+          <span style="font-size: 0.75rem; font-weight: 500; display: block; color: var(--text-muted);">Faculty of Science</span>
+        </div>
+      </a>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <a href="index.html" class="btn btn-outline btn-sm">Back to Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Auth Main Container -->
+  <main class="auth-wrapper">
+    <div class="card auth-card">
+      
+      <!-- Tab Headers -->
+      <div class="auth-tabs">
+        <div id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Sign In</div>
+        <div id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Create Account</div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="login-container">
+        <div class="text-center mb-3">
+          <h2>Welcome Back</h2>
+          <p class="text-muted" style="font-size: 0.875rem;">Sign in to access lecture notes and practice quizzes.</p>
+        </div>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email Address</label>
+            <input type="email" id="login-email" class="form-control" placeholder="e.g. student@ndu.edu.ng" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+          </div>
+
+          <div class="flex justify-between items-center mb-3">
+            <label style="font-size: 0.85rem; cursor: pointer;">
+              <input type="checkbox" id="remember-me"> Remember me
+            </label>
+            <a href="#" onclick="showToast('Password reset link will be sent to your email.', 'info')" style="font-size: 0.85rem;">Forgot Password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Login to FSARAP</button>
+        </form>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="register-container" style="display: none;">
+        <div class="text-center mb-3">
+          <h2>Create FSARAP Account</h2>
+          <p class="text-muted" style="font-size: 0.875rem;">Join Niger Delta University Faculty of Science digital portal.</p>
+        </div>
+
+        <form id="register-form">
+          <!-- Role Selection -->
+          <div class="role-switcher">
+            <div class="role-option">
+              <input type="radio" id="role-student" name="reg-role" value="student" checked onchange="handleRoleChange('student')">
+              <label for="role-student">👨‍🎓 Student</label>
+            </div>
+            <div class="role-option">
+              <input type="radio" id="role-lecturer" name="reg-role" value="lecturer" onchange="handleRoleChange('lecturer')">
+              <label for="role-lecturer">👨‍🏫 Lecturer</label>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1 mb-1">
+            <div class="form-group">
+              <label class="form-label" for="reg-firstname">First Name</label>
+              <input type="text" id="reg-firstname" class="form-control" placeholder="First Name" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-lastname">Last Name</label>
+              <input type="text" id="reg-lastname" class="form-control" placeholder="Last Name" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-email">Email Address</label>
+            <input type="email" id="reg-email" class="form-control" placeholder="e.g. username@ndu.edu.ng" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-password">Password</label>
+            <input type="password" id="reg-password" class="form-control" placeholder="At least 6 characters" minlength="6" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-department">Department</label>
+            <select id="reg-department" class="form-select" required>
+              <option value="">Loading Departments...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-level">Academic Level</label>
+            <select id="reg-level" class="form-select">
+              <option value="">Loading Levels...</option>
+            </select>
+          </div>
+
+          <!-- Student Extra Fields -->
+          <div id="student-extra-fields">
+            <div class="form-group">
+              <label class="form-label" for="reg-matric">Matriculation Number (Optional)</label>
+              <input type="text" id="reg-matric" class="form-control" placeholder="e.g. NDU/2022/CSC/042">
+            </div>
+          </div>
+
+          <!-- Lecturer Extra Fields -->
+          <div id="lecturer-extra-fields" style="display: none;">
+            <div class="form-group">
+              <label class="form-label" for="reg-staffid">Staff Identification Number</label>
+              <input type="text" id="reg-staffid" class="form-control" placeholder="e.g. NDU-STAFF-104">
+            </div>
+            <div class="badge badge-warning mb-2" style="width: 100%; justify-content: center; text-transform: none;">
+              ⚠️ Lecturer accounts require administrative approval before login activation.
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary mt-2" style="width: 100%;">Create Account</button>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    // URL Query Parameter Mode Switcher (auth.html?mode=register)
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+
+    function switchAuthTab(tab) {
+      const loginTab = document.getElementById('tab-login');
+      const registerTab = document.getElementById('tab-register');
+      const loginContainer = document.getElementById('login-container');
+      const registerContainer = document.getElementById('register-container');
+
+      if (tab === 'register') {
+        loginTab.classList.remove('active');
+        registerTab.classList.add('active');
+        loginContainer.style.display = 'none';
+        registerContainer.style.display = 'block';
+      } else {
+        registerTab.classList.remove('active');
+        loginTab.classList.add('active');
+        registerContainer.style.display = 'none';
+        loginContainer.style.display = 'block';
+      }
+    }
+
+    if (mode === 'register') {
+      switchAuthTab('register');
+    }
+  </script>
+</body>
+</html>

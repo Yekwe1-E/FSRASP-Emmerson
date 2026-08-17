@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin Dashboard - FSARAP | Niger Delta University</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container flex items-center justify-between">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-badge">NDU</div>
+        <div>
+          <span>FSARAP</span>
+          <span style="font-size: 0.75rem; font-weight: 500; display: block; color: var(--text-muted);">Super Admin Portal</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="repository.html" class="nav-link">Repository</a></li>
+        <li><a href="quizzes.html" class="nav-link">Quizzes</a></li>
+        <li><a href="dashboard-admin.html" class="nav-link active">Admin Dashboard</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <div id="nav-auth-container"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Admin Main View -->
+  <main style="padding: 3rem 0;">
+    <div class="container">
+      
+      <div class="mb-4 flex justify-between items-center">
+        <div>
+          <span class="badge badge-primary mb-1">Super Administrator Control Center</span>
+          <h2>System Operations & Analytics Overview</h2>
+        </div>
+        <a href="upload-material.html" class="btn btn-primary">➕ Upload Material</a>
+      </div>
+
+      <!-- Stat Cards Grid -->
+      <div class="grid grid-cols-4 gap-3 mb-4 text-center">
+        <div class="card">
+          <h3 id="stat-total-students" style="font-size: 2.2rem; color: var(--primary);">0</h3>
+          <p class="text-muted font-semibold">Registered Students</p>
+        </div>
+        <div class="card">
+          <h3 id="stat-total-lecturers" style="font-size: 2.2rem; color: var(--secondary);">0</h3>
+          <p class="text-muted font-semibold">Verified Lecturers</p>
+        </div>
+        <div class="card">
+          <h3 id="stat-total-materials" style="font-size: 2.2rem; color: var(--accent);">0</h3>
+          <p class="text-muted font-semibold">Repository Materials</p>
+        </div>
+        <div class="card">
+          <h3 id="stat-total-downloads" style="font-size: 2.2rem; color: var(--danger);">0</h3>
+          <p class="text-muted font-semibold">Total Downloads</p>
+        </div>
+      </div>
+
+      <!-- Pending Lecturer Approvals -->
+      <div class="card mb-4" style="padding: 1.5rem;">
+        <h3 class="mb-3" style="font-size: 1.2rem;">Pending Lecturer Approvals</h3>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                <th style="padding: 0.75rem;">Lecturer Name</th>
+                <th style="padding: 0.75rem;">Email</th>
+                <th style="padding: 0.75rem;">Department</th>
+                <th style="padding: 0.75rem;">Staff ID</th>
+                <th style="padding: 0.75rem;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pending-lecturers-table">
+              <!-- Populated via dashboard.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- System Users Management & Audit Log Grid -->
+      <div class="grid grid-cols-3 gap-3">
+        
+        <div class="card" style="grid-column: span 2; padding: 1.5rem;">
+          <h3 class="mb-3" style="font-size: 1.2rem;">User Accounts Management</h3>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+              <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                  <th style="padding: 0.5rem;">Name</th>
+                  <th style="padding: 0.5rem;">Email</th>
+                  <th style="padding: 0.5rem;">Role</th>
+                  <th style="padding: 0.5rem;">Status</th>
+                </tr>
+              </thead>
+              <tbody id="users-list-table">
+                <!-- Populated via dashboard.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 1.5rem;">
+          <h3 class="mb-3" style="font-size: 1.2rem;">Recent Audit Logs</h3>
+          <div id="audit-logs-container">
+            <!-- Populated via dashboard.js -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

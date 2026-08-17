@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Result - FSARAP | Niger Delta University</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container flex items-center justify-between">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-badge">NDU</div>
+        <div>
+          <span>FSARAP</span>
+          <span style="font-size: 0.75rem; font-weight: 500; display: block; color: var(--text-muted);">Faculty of Science</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="repository.html" class="nav-link">Repository</a></li>
+        <li><a href="quizzes.html" class="nav-link active">Quizzes</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <div id="nav-auth-container"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Quiz Result Breakdown View -->
+  <main style="padding: 3.5rem 0;">
+    <div class="container" style="max-width: 850px;">
+      
+      <div id="quiz-result-container">
+        <div class="card text-center" style="padding: 3rem;">
+          <div style="font-size: 2.5rem; animation: spin 1s linear infinite;">⏳</div>
+          <p class="text-muted mt-2">Fetching score breakdown & performance analysis...</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/quiz.js"></script>
+</body>
+</html>

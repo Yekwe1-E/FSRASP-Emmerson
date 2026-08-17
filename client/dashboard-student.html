@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard - FSARAP | Niger Delta University</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container flex items-center justify-between">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-badge">NDU</div>
+        <div>
+          <span>FSARAP</span>
+          <span style="font-size: 0.75rem; font-weight: 500; display: block; color: var(--text-muted);">Student Portal</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="repository.html" class="nav-link">Repository</a></li>
+        <li><a href="quizzes.html" class="nav-link">Quizzes</a></li>
+        <li><a href="dashboard-student.html" class="nav-link active">Dashboard</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <div id="nav-auth-container"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Student Dashboard View -->
+  <main style="padding: 3rem 0;">
+    <div class="container">
+      
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <span class="badge badge-primary mb-1">Learning Performance Center</span>
+          <h2>Student Overview Dashboard</h2>
+        </div>
+        <div class="flex gap-2">
+          <a href="repository.html" class="btn btn-primary">📚 Browse Repository</a>
+          <a href="quizzes.html" class="btn btn-accent">📝 Practice Quizzes</a>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-3 gap-3 mb-4 text-center">
+        <div class="card">
+          <h3 id="stat-student-bookmarks" style="font-size: 2.2rem; color: var(--primary);">0</h3>
+          <p class="text-muted font-semibold">Bookmarked Materials</p>
+        </div>
+        <div class="card">
+          <h3 id="stat-student-quiz-count" style="font-size: 2.2rem; color: var(--secondary);">0</h3>
+          <p class="text-muted font-semibold">Quizzes Attempted</p>
+        </div>
+        <div class="card">
+          <h3 id="stat-student-avg-score" style="font-size: 2.2rem; color: var(--accent);">0%</h3>
+          <p class="text-muted font-semibold">Average Quiz Score</p>
+        </div>
+      </div>
+
+      <!-- Recommended Materials for Student -->
+      <h3 class="mb-3">Recommended Course Materials</h3>
+      <div id="recommended-materials-grid" class="grid grid-cols-3 gap-3">
+        <!-- Populated via dashboard.js -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/repository.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

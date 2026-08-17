@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Material Details - FSARAP | Niger Delta University</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container flex items-center justify-between">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-badge">NDU</div>
+        <div>
+          <span>FSARAP</span>
+          <span style="font-size: 0.75rem; font-weight: 500; display: block; color: var(--text-muted);">Faculty of Science</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="repository.html" class="nav-link active">Repository</a></li>
+        <li><a href="quizzes.html" class="nav-link">Quizzes</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <div id="nav-auth-container"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Material Details Main View -->
+  <main style="padding: 3.5rem 0;">
+    <div class="container" style="max-width: 850px;">
+      
+      <a href="repository.html" class="btn btn-outline btn-sm mb-3">&larr; Back to Repository</a>
+
+      <div id="material-detail-card" class="card" style="padding: 2.5rem;">
+        <div style="text-align: center; padding: 3rem 0;">
+          <div style="font-size: 2.5rem; animation: spin 1s linear infinite;">⏳</div>
+          <p class="text-muted mt-2">Loading material details...</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/repository.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      const container = document.getElementById('material-detail-card');
+
+      if (!id) {
+        container.innerHTML = `
+          <div class="text-center">
+            <h3>Invalid Material ID</h3>
+            <a href="repository.html" class="btn btn-primary mt-2">Return to Repository</a>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const res = await apiCall(`/materials/${id}`);
+        if (res.success && res.data) {
+          const item = res.data;
+          const fileIcon = getFileIcon(item.file_type);
+
+          container.innerHTML = `
+            <div class="flex justify-between items-center mb-3">
+              <span class="badge badge-primary">${item.course_code} • ${item.level_code} Level</span>
+              <button onclick="handleBookmarkToggle('${item.id}', this)" class="btn btn-outline btn-sm">
+                ${item.is_bookmarked ? '⭐ Bookmarked' : '☆ Bookmark'}
+              </button>
+            </div>
+
+            <div class="flex gap-2 items-center mb-3">
+              <div style="font-size: 3.5rem;">${fileIcon}</div>
+              <div>
+                <h1 style="font-size: 1.75rem; margin-bottom: 0.25rem;">${escapeHtml(item.title)}</h1>
+                <p class="text-muted" style="font-size: 0.95rem;">${escapeHtml(item.course_title)} (${item.credit_units} Credit Units)</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mb-4" style="background-color: var(--bg-main); padding: 1.25rem; border-radius: var(--radius-md);">
+              <div>
+                <span class="text-muted" style="font-size: 0.8rem; display: block;">Department:</span>
+                <strong>${item.department_name} (${item.department_code})</strong>
+              </div>
+              <div>
+                <span class="text-muted" style="font-size: 0.8rem; display: block;">Semester & Session:</span>
+                <strong>${item.semester_name} • ${item.session_name}</strong>
+              </div>
+              <div>
+                <span class="text-muted" style="font-size: 0.8rem; display: block;">Uploaded By:</span>
+                <strong>${item.uploader_first_name} ${item.uploader_last_name}</strong>
+              </div>
+              <div>
+                <span class="text-muted" style="font-size: 0.8rem; display: block;">File Details:</span>
+                <strong>${item.file_type.toUpperCase()} (${formatFileSize(item.file_size)})</strong>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Material Description</h3>
+              <p class="text-muted" style="line-height: 1.7;">${escapeHtml(item.description || 'No detailed description provided by lecturer.')}</p>
+            </div>
+
+            <div class="flex justify-between items-center pt-3" style="border-top: 1px solid var(--border-color);">
+              <span class="text-muted" style="font-size: 0.85rem;">📥 Downloaded ${item.download_count || 0} times</span>
+              <button onclick="handleMaterialDownload('${item.id}')" class="btn btn-primary btn-lg">
+                <span>⬇️</span> Download File (${item.file_type.toUpperCase()})
+              </button>
+            </div>
+          `;
+        }
+      } catch (err) {
+        container.innerHTML = `
+          <div class="text-center text-muted">
+            <h3 style="color: var(--danger);">Failed to load material</h3>
+            <p>${err.message}</p>
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
