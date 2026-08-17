@@ -278,7 +278,7 @@ const startQuizAttempt = async (req, res, next) => {
     const attemptId = randomUUID();
     const attemptRes = await query(
       `INSERT INTO quiz_attempts (id, quiz_id, student_id, attempt_number, started_at, status)
-       VALUES ($1, $2, $3, $4, datetime('now'), 'in_progress')
+       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, 'in_progress')
        RETURNING *`,
       [attemptId, id, studentId, attemptNum]
     );

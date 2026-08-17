@@ -79,12 +79,11 @@ function transformSQL(sql) {
 // Universal query function
 // ─────────────────────────────────────────────────────────────────────────────
 const query = async (text, params = []) => {
-  if (mode === 'postgres' && pool) {
+  if (usePostgres && pool) {
     try {
       return await pool.query(text, params);
     } catch (err) {
-      console.warn(`⚠️ Remote database connection timeout/notice (${err.message}). Using local database standby.`);
-      mode = 'sqlite';
+      console.warn(`⚠️ PostgreSQL query attempt notice (${err.message}). Executing query fallback...`);
     }
   }
 
@@ -369,76 +368,111 @@ function initOfflineSQLiteSchema(db) {
 
   // Departments
   const depts = [
-    ['dept-1', 'Department of Computer Science', 'CSC', 'Computer Science, Cyber Security & Software Engineering'],
-    ['dept-2', 'Department of Microbiology', 'MCB', 'Microbiology, Environmental & Medical Microbiology'],
-    ['dept-3', 'Department of Biochemistry', 'BCH', 'Biochemistry & Molecular Biology'],
-    ['dept-4', 'Department of Pure and Applied Chemistry', 'CHM', 'Analytical & Organic Chemistry'],
-    ['dept-5', 'Department of Physics', 'PHY', 'Physics, Geophysics & Electronics'],
-    ['dept-6', 'Department of Geology', 'GLY', 'Geology & Petroleum Geosciences'],
-    ['dept-7', 'Department of Biological Sciences', 'BIO', 'Plant Science, Zoology & Marine Biology']
+    ['11111111-1111-1111-1111-111111111111', 'Department of Computer Science', 'CSC', 'Computer Science, Cyber Security & Software Engineering'],
+    ['22222222-2222-2222-2222-222222222222', 'Department of Microbiology', 'MCB', 'Microbiology, Environmental & Medical Microbiology'],
+    ['33333333-3333-3333-3333-333333333333', 'Department of Biochemistry', 'BCH', 'Biochemistry & Molecular Biology'],
+    ['44444444-4444-4444-4444-444444444444', 'Department of Pure and Applied Chemistry', 'CHM', 'Analytical & Organic Chemistry'],
+    ['55555555-5555-5555-5555-555555555555', 'Department of Physics', 'PHY', 'Physics, Geophysics & Electronics'],
+    ['66666666-6666-6666-6666-666666666666', 'Department of Geology', 'GLY', 'Geology & Petroleum Geosciences'],
+    ['77777777-7777-7777-7777-777777777777', 'Department of Biological Sciences', 'BIO', 'Plant Science, Zoology & Marine Biology']
   ];
   const ins_dept = db.prepare('INSERT OR IGNORE INTO departments (id, name, code, description) VALUES (?, ?, ?, ?)');
   depts.forEach(d => ins_dept.run(d));
 
   // Academic Levels
   const levels = [
-    ['lvl-100', '100', '100 Level'],
-    ['lvl-200', '200', '200 Level'],
-    ['lvl-300', '300', '300 Level'],
-    ['lvl-400', '400', '400 Level'],
-    ['lvl-500', '500', '500 Level']
+    ['10000000-0000-0000-0000-000000000100', '100', '100 Level'],
+    ['20000000-0000-0000-0000-000000000200', '200', '200 Level'],
+    ['30000000-0000-0000-0000-000000000300', '300', '300 Level'],
+    ['40000000-0000-0000-0000-000000000400', '400', '400 Level'],
+    ['50000000-0000-0000-0000-000000000500', '500', '500 Level']
   ];
   const ins_level = db.prepare('INSERT OR IGNORE INTO academic_levels (id, level_code, level_name) VALUES (?, ?, ?)');
   levels.forEach(l => ins_level.run(l));
 
   // Semesters
-  db.prepare('INSERT OR IGNORE INTO semesters (id, name, code) VALUES (?, ?, ?)').run('sem-1', 'First Semester', '1');
-  db.prepare('INSERT OR IGNORE INTO semesters (id, name, code) VALUES (?, ?, ?)').run('sem-2', 'Second Semester', '2');
+  db.prepare('INSERT OR IGNORE INTO semesters (id, name, code) VALUES (?, ?, ?)').run('e1111111-1111-1111-1111-111111111111', 'First Semester', 'SEM1');
+  db.prepare('INSERT OR IGNORE INTO semesters (id, name, code) VALUES (?, ?, ?)').run('e2222222-2222-2222-2222-222222222222', 'Second Semester', 'SEM2');
 
   // Academic Sessions
-  db.prepare('INSERT OR IGNORE INTO academic_sessions (id, session_name, is_current) VALUES (?, ?, ?)').run('sess-2025-2026', '2025/2026', 1);
-  db.prepare('INSERT OR IGNORE INTO academic_sessions (id, session_name, is_current) VALUES (?, ?, ?)').run('sess-2024-2025', '2024/2025', 0);
+  db.prepare('INSERT OR IGNORE INTO academic_sessions (id, session_name, is_current) VALUES (?, ?, ?)').run('a1111111-1111-1111-1111-111111111111', '2024/2025', 1);
 
   // Default Accounts (password: Password123!)
   const hash = bcrypt.hashSync('Password123!', 10);
 
   db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,is_approved,is_active)
               VALUES (?,?,?,?,?,?,1,1)`)
-    .run('usr-admin-1', 'admin@ndu.edu.ng', hash, 'Super', 'Administrator', 'super_admin');
+    .run('u1111111-1111-1111-1111-111111111111', 'admin@ndu.edu.ng', hash, 'Super', 'Administrator', 'super_admin');
 
   db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,department_id,staff_id,is_approved,is_active)
               VALUES (?,?,?,?,?,?,?,?,1,1)`)
-    .run('usr-lec-1', 'lecturer@ndu.edu.ng', hash, 'Dr. Ebimowei', 'Oboro', 'lecturer', 'dept-1', 'NDU/STAFF/CSC/042');
+    .run('u2222222-2222-2222-2222-222222222222', 'lecturer@ndu.edu.ng', hash, 'Dr. Ebimowei', 'Oboro', 'lecturer', '11111111-1111-1111-1111-111111111111', 'NDU/STAFF/CSC/042');
 
   db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,department_id,level_id,matric_number,is_approved,is_active)
               VALUES (?,?,?,?,?,?,?,?,?,1,1)`)
-    .run('usr-stu-1', 'student@ndu.edu.ng', hash, 'Tari', 'Ebi', 'student', 'dept-1', 'lvl-300', 'NDU/2022/CSC/015');
+    .run('u3333333-3333-3333-3333-333333333333', 'student@ndu.edu.ng', hash, 'Tari', 'Ebi', 'student', '11111111-1111-1111-1111-111111111111', '30000000-0000-0000-0000-000000000300', 'NDU/2022/CSC/015');
 
-  // Courses
-  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
-              VALUES (?,?,?,?,?,?,?,?)`)
-    .run('crs-csc111', 'CSC 111', 'Introduction to Computer Science & Algorithms', 3, 'dept-1', 'lvl-100', 'sem-1', 'usr-lec-1');
+  // Courses (All 8 Departments)
+  const addCourse = (id, code, title, units, dept, lvl, sem) => {
+    db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
+                VALUES (?,?,?,?,?,?,?,?)`).run(id, code, title, units, dept, lvl, sem, 'usr-lec-1');
+  };
 
-  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
-              VALUES (?,?,?,?,?,?,?,?)`)
-    .run('crs-csc212', 'CSC 212', 'Object-Oriented Programming', 3, 'dept-1', 'lvl-200', 'sem-2', 'usr-lec-1');
+  // Computer Science
+  addCourse('crs-csc111', 'CSC 111', 'Introduction to Computer Science & Algorithms', 3, 'dept-1', 'lvl-100', 'sem-1');
+  addCourse('crs-csc212', 'CSC 212', 'Object-Oriented Programming (C++ & Java)', 3, 'dept-1', 'lvl-200', 'sem-2');
+  addCourse('crs-csc311', 'CSC 311', 'Data Structures and Algorithms II', 3, 'dept-1', 'lvl-300', 'sem-1');
+  addCourse('crs-csc411', 'CSC 411', 'Operating Systems Architecture', 3, 'dept-1', 'lvl-400', 'sem-1');
+  addCourse('crs-csc415', 'CSC 415', 'Computer Systems Performance & Evaluation', 3, 'dept-1', 'lvl-400', 'sem-1');
 
-  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
-              VALUES (?,?,?,?,?,?,?,?)`)
-    .run('crs-csc311', 'CSC 311', 'Data Structures and Algorithms II', 3, 'dept-1', 'lvl-300', 'sem-1', 'usr-lec-1');
+  // Microbiology
+  addCourse('crs-mcb211', 'MCB 211', 'General Microbiology I', 3, 'dept-2', 'lvl-200', 'sem-1');
+  addCourse('crs-mcb312', 'MCB 312', 'Environmental & Aquatic Microbiology', 3, 'dept-2', 'lvl-300', 'sem-2');
+  addCourse('crs-mcb411', 'MCB 411', 'Medical Microbiology & Diagnostic Pathology', 3, 'dept-2', 'lvl-400', 'sem-1');
 
-  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
-              VALUES (?,?,?,?,?,?,?,?)`)
-    .run('crs-mcb211', 'MCB 211', 'General Microbiology I', 3, 'dept-2', 'lvl-200', 'sem-1', 'usr-lec-1');
+  // Biochemistry
+  addCourse('crs-bch201', 'BCH 201', 'General Biochemistry & Biomolecules', 3, 'dept-3', 'lvl-200', 'sem-1');
+  addCourse('crs-bch311', 'BCH 311', 'Enzymology & Intermediary Metabolism', 3, 'dept-3', 'lvl-300', 'sem-1');
 
-  // Sample Materials Seed
-  db.prepare(`INSERT OR IGNORE INTO materials (id, title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
-              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run('mat-1', 'CSC 111 Comprehensive Lecture Notes', 'Introduction to computer science fundamentals, boolean logic, and algorithms.', 'crs-csc111', 'dept-1', 'lvl-100', 'sem-1', 'sess-2025-2026', 'usr-lec-1', 'Lecture Notes', '/uploads/CSC111_Notes.pdf', 'CSC/100L/CSC111_Notes.pdf', 'pdf', 2450000, 'approved');
+  // Pure & Applied Chemistry
+  addCourse('crs-chm101', 'CHM 101', 'General Chemistry I', 3, 'dept-4', 'lvl-100', 'sem-1');
+  addCourse('crs-chm211', 'CHM 211', 'Organic Chemistry I & Mechanisms', 3, 'dept-4', 'lvl-200', 'sem-1');
 
-  db.prepare(`INSERT OR IGNORE INTO materials (id, title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
-              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run('mat-2', 'MCB 211 General Microbiology Manual', 'Practical guide for general microbiology techniques and microscopy.', 'crs-mcb211', 'dept-2', 'lvl-200', 'sem-1', 'sess-2025-2026', 'usr-lec-1', 'Lab Guides', '/uploads/MCB211_Manual.pdf', 'MCB/200L/MCB211_Manual.pdf', 'pdf', 1850000, 'approved');
+  // Physics
+  addCourse('crs-phy101', 'PHY 101', 'General Physics I - Mechanics & Hydrostatics', 3, 'dept-5', 'lvl-100', 'sem-1');
+  addCourse('crs-phy211', 'PHY 211', 'Electromagnetism & Circuit Theory', 3, 'dept-5', 'lvl-200', 'sem-1');
+
+  // Geology
+  addCourse('crs-gly101', 'GLY 101', 'Introduction to Physical Geology', 3, 'dept-6', 'lvl-100', 'sem-1');
+  addCourse('crs-gly315', 'GLY 315', 'Structural Geology & Tectonics', 3, 'dept-6', 'lvl-300', 'sem-1');
+
+  // Mathematics & Statistics
+  addCourse('crs-mth110', 'MTH 110', 'Elementary Mathematics I (Algebra & Trig)', 3, 'dept-7', 'lvl-100', 'sem-1');
+  addCourse('crs-mth211', 'MTH 211', 'Mathematical Methods I', 3, 'dept-7', 'lvl-200', 'sem-1');
+
+  // Biological Sciences
+  addCourse('crs-bio101', 'BIO 101', 'General Biology I - Cell & Organisms', 3, 'dept-8', 'lvl-100', 'sem-1');
+  addCourse('crs-bio211', 'BIO 211', 'Cell Biology & Genetics', 3, 'dept-8', 'lvl-200', 'sem-1');
+
+  // Materials Seed (Across All Departments)
+  const addMat = (id, title, desc, course, dept, lvl, sem, cat, fileUrl, filePath) => {
+    db.prepare(`INSERT OR IGNORE INTO materials (id, title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .run(id, title, desc, course, dept, lvl, sem, 'sess-2024-2025', 'usr-lec-1', cat, fileUrl, filePath, 'pdf', 2450000, 'approved');
+  };
+
+  addMat('mat-1', 'CSC 111 Comprehensive Lecture Notes', 'Introduction to computer science fundamentals, boolean logic, and algorithms.', 'crs-csc111', 'dept-1', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/CSC111_Notes.pdf', 'CSC/100L/CSC111_Notes.pdf');
+  addMat('mat-2', 'MCB 211 General Microbiology Lab Manual', 'Practical guide for general microbiology techniques and microscopy.', 'crs-mcb211', 'dept-2', 'lvl-200', 'sem-1', 'Lab Guides', '/uploads/MCB211_Manual.pdf', 'MCB/200L/MCB211_Manual.pdf');
+  addMat('mat-3', 'CSC 212 OOP in Java & C++ Guide', 'Object oriented principles, inheritance, polymorphism, and exception handling.', 'crs-csc212', 'dept-1', 'lvl-200', 'sem-2', 'Lecture Notes', '/uploads/CSC212_Notes.pdf', 'CSC/200L/CSC212_Notes.pdf');
+  addMat('mat-4', 'CSC 311 Data Structures & Algorithms II Handbook', 'Advanced tree structures, graph traversal, sorting algorithms, and dynamic programming.', 'crs-csc311', 'dept-1', 'lvl-300', 'sem-1', 'Lecture Notes', '/uploads/CSC311_Notes.pdf', 'CSC/300L/CSC311_Notes.pdf');
+  addMat('mat-5', 'CSC 411 Operating Systems Architecture Notes', 'Process management, thread synchronization, memory management, and file systems.', 'crs-csc411', 'dept-1', 'lvl-400', 'sem-1', 'Lecture Notes', '/uploads/CSC411_Notes.pdf', 'CSC/400L/CSC411_Notes.pdf');
+  addMat('mat-6', 'CSC 415 Computer Performance Evaluation Past Questions', '2021-2024 Past Examination Questions with Worked Solutions.', 'crs-csc415', 'dept-1', 'lvl-400', 'sem-1', 'Past Questions', '/uploads/CSC415_Past_Questions.pdf', 'CSC/400L/CSC415_Past_Questions.pdf');
+  addMat('mat-7', 'BCH 201 Biomolecules & Cell Biochemistry', 'Structure and function of proteins, nucleic acids, carbohydrates, and lipids.', 'crs-bch201', 'dept-3', 'lvl-200', 'sem-1', 'Lecture Notes', '/uploads/BCH201_Notes.pdf', 'BCH/200L/BCH201_Notes.pdf');
+  addMat('mat-8', 'CHM 101 General Chemistry Module I', 'Atomic structure, stoichiometry, chemical equilibrium, and periodic table trends.', 'crs-chm101', 'dept-4', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/CHM101_Module.pdf', 'CHM/100L/CHM101_Module.pdf');
+  addMat('mat-9', 'PHY 101 Mechanics & Hydrostatics Lecture Notes', 'Vectors, Newton laws of motion, work-energy theorem, and fluid dynamics.', 'crs-phy101', 'dept-5', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/PHY101_Notes.pdf', 'PHY/100L/PHY101_Notes.pdf');
+  addMat('mat-10', 'GLY 101 Physical Geology Field Guide', 'Identification of igneous, sedimentary, metamorphic rocks, and plate tectonics.', 'crs-gly101', 'dept-6', 'lvl-100', 'sem-1', 'Lab Guides', '/uploads/GLY101_Guide.pdf', 'GLY/100L/GLY101_Guide.pdf');
+  addMat('mat-11', 'MTH 110 Algebra & Trigonometry Handout', 'Polynomials, binomial theorem, complex numbers, and trigonometric identities.', 'crs-mth110', 'dept-7', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/MTH110_Handout.pdf', 'MTH/100L/MTH110_Handout.pdf');
+  addMat('mat-12', 'BIO 101 General Biology I Practical Manual', 'Microscopic observation of plant/animal tissues, cell division, and enzyme activity.', 'crs-bio101', 'dept-8', 'lvl-100', 'sem-1', 'Lab Guides', '/uploads/BIO101_Manual.pdf', 'BIO/100L/BIO101_Manual.pdf');
 
   // Sample Quiz
   db.prepare(`INSERT OR IGNORE INTO quizzes (id,title,description,course_id,creator_id,duration_minutes,total_marks,pass_percentage,max_attempts)

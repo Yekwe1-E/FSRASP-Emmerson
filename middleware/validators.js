@@ -43,7 +43,10 @@ const registerValidationRules = () => [
     .isIn(['student', 'lecturer']).withMessage('Role must be either student or lecturer'),
   body('department_id')
     .optional({ checkFalsy: true })
-    .isUUID().withMessage('Department ID must be a valid UUID'),
+    .trim(),
+  body('level_id')
+    .optional({ checkFalsy: true })
+    .trim(),
   body('matric_number')
     .optional({ checkFalsy: true })
     .trim(),
