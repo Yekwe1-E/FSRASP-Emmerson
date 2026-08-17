@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FSARAP - Faculty of Science Academic Repository | Niger Delta University</title>
+  <meta name="description" content="Centralized academic repository and self-assessment portal for the Faculty of Science, Niger Delta University (NDU), Wilberforce Island.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container flex items-center justify-between">
+      <a href="index.html" class="nav-brand">
+        <div class="nav-logo-badge">NDU</div>
+        <div>
+          <span>FSARAP</span>
+          <span style="font-size: 0.75rem; font-weight: 500; display: block; color: var(--text-muted);">Faculty of Science</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link active">Home</a></li>
+        <li><a href="repository.html" class="nav-link">Repository</a></li>
+        <li><a href="quizzes.html" class="nav-link">Quizzes</a></li>
+        <li><a href="#departments" class="nav-link">Departments</a></li>
+        <li><a href="#about" class="nav-link">About NDU FSARAP</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button onclick="toggleTheme()" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <div id="nav-auth-container">
+          <!-- Populated by auth.js -->
+        </div>
+        <button onclick="toggleMobileMenu()" class="mobile-nav-toggle" title="Toggle Navigation Menu">☰</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container grid grid-cols-2 items-center gap-4">
+      <div>
+        <span class="badge badge-primary mb-2">Niger Delta University • Faculty of Science</span>
+        <h1 class="hero-title">Empowering Science Education Through Digital Material Access</h1>
+        <p class="text-muted mb-3" style="font-size: 1.1rem;">
+          Access verified lecture notes, practical manuals, lab guides, past questions, and take automated self-assessment quizzes designed to boost academic success.
+        </p>
+        <div class="flex gap-2">
+          <a href="repository.html" class="btn btn-primary btn-lg">
+            <span>📚</span> Browse Repository
+          </a>
+          <a href="quizzes.html" class="btn btn-outline btn-lg">
+            <span>📝</span> Take Self-Assessment
+          </a>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <div class="card card-hoverable" style="padding: 2.5rem; background: linear-gradient(135deg, var(--bg-card), var(--primary-light)); border: 1px solid var(--primary);">
+          <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔬</div>
+          <h2 style="font-size: 1.5rem; margin-bottom: 0.75rem;">Faculty of Science Digital Hub</h2>
+          <p class="text-muted" style="font-size: 0.95rem; margin-bottom: 1.5rem;">
+            Replacing informal file sharing with an organized, role-secured repository for all 100L - 500L science courses.
+          </p>
+          <div class="flex justify-center gap-2">
+            <span class="badge badge-accent">100% Verified Notes</span>
+            <span class="badge badge-secondary">Instant Quiz Grading</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platform Statistics Bar -->
+  <section style="padding: 2.5rem 0; background-color: var(--bg-card); border-y: 1px solid var(--border-color);">
+    <div class="container grid grid-cols-4 text-center gap-3">
+      <div>
+        <h2 style="font-size: 2.2rem; color: var(--primary);">8+</h2>
+        <p class="text-muted font-semibold">Science Departments</p>
+      </div>
+      <div>
+        <h2 style="font-size: 2.2rem; color: var(--secondary);">100L - 500L</h2>
+        <p class="text-muted font-semibold">Academic Levels Covered</p>
+      </div>
+      <div>
+        <h2 style="font-size: 2.2rem; color: var(--accent);">PDF / PPT / DOC</h2>
+        <p class="text-muted font-semibold">Multiple File Formats</p>
+      </div>
+      <div>
+        <h2 style="font-size: 2.2rem; color: var(--danger);">Auto-Grade</h2>
+        <p class="text-muted font-semibold">Self-Assessment Portal</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Science Departments Grid Section -->
+  <section id="departments" style="padding: 4rem 0;">
+    <div class="container">
+      <div class="text-center mb-4">
+        <span class="badge badge-secondary mb-1">Academic Divisions</span>
+        <h2>Faculty of Science Departments</h2>
+        <p class="text-muted">Select your department to explore structured course materials and practice quizzes.</p>
+      </div>
+
+      <div class="grid grid-cols-4 gap-3">
+        <div class="card card-hoverable">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary);">💻</div>
+          <h3>Computer Science</h3>
+          <p class="text-muted mt-1" style="font-size: 0.85rem;">CSC 111, 211, 311, 411 Algorithms, Software & Systems.</p>
+          <a href="repository.html?dept=CSC" class="btn btn-outline btn-sm mt-3" style="width: 100%;">View Materials &rarr;</a>
+        </div>
+
+        <div class="card card-hoverable">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--secondary);">🧫</div>
+          <h3>Microbiology</h3>
+          <p class="text-muted mt-1" style="font-size: 0.85rem;">MCB Lab manuals, bacteriology, virology & immunology.</p>
+          <a href="repository.html?dept=MCB" class="btn btn-outline btn-sm mt-3" style="width: 100%;">View Materials &rarr;</a>
+        </div>
+
+        <div class="card card-hoverable">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--accent);">🧪</div>
+          <h3>Biochemistry</h3>
+          <p class="text-muted mt-1" style="font-size: 0.85rem;">BCH Enzymology, metabolic pathways & molecular biology.</p>
+          <a href="repository.html?dept=BCH" class="btn btn-outline btn-sm mt-3" style="width: 100%;">View Materials &rarr;</a>
+        </div>
+
+        <div class="card card-hoverable">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--danger);">⚗️</div>
+          <h3>Chemistry</h3>
+          <p class="text-muted mt-1" style="font-size: 0.85rem;">CHM Organic, inorganic, physical chemistry & practical guides.</p>
+          <a href="repository.html?dept=CHM" class="btn btn-outline btn-sm mt-3" style="width: 100%;">View Materials &rarr;</a>
+        </div>
+
+        <div class="card card-hoverable">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary);">⚡</div>
+          <h3>Physics</h3>
+          <p class="text-muted mt-1" style="font-size: 0.85rem;">PHY Electronics, quantum physics & lab manual experiments.</p>
+          <a href="repository.html?dept=PHY" class="btn btn-outline btn-sm mt-3" style="width: 100%;">View Materials &rarr;</a>
+        </div>
+
+        <div class="card card-hoverable">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--secondary);">💎</div>
+          <h3>Geology</h3>
+          <p class="text-muted mt-1" style="font-size: 0.85rem;">GLY Mineralogy, structural geology & petroleum geology.</p>
+          <a href="repository.html?dept=GLY" class="btn btn-outline btn-sm mt-3" style="width: 100%;">View Materials &rarr;</a>
+        </div>
+
+        <div class="card card-hoverable">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--accent);">📐</div>
+          <h3>Mathematics</h3>
+          <p class="text-muted mt-1" style="font-size: 0.85rem;">MTH Calculus, linear algebra, statistics & differential equations.</p>
+          <a href="repository.html?dept=MTH" class="btn btn-outline btn-sm mt-3" style="width: 100%;">View Materials &rarr;</a>
+        </div>
+
+        <div class="card card-hoverable">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--warning);">🌿</div>
+          <h3>Biological Sciences</h3>
+          <p class="text-muted mt-1" style="font-size: 0.85rem;">BIO Botany, zoology, ecology & genetics notes.</p>
+          <a href="repository.html?dept=BIO" class="btn btn-outline btn-sm mt-3" style="width: 100%;">View Materials &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container grid grid-cols-4 gap-3 mb-3">
+      <div>
+        <div class="nav-brand mb-2">
+          <div class="nav-logo-badge">NDU</div>
+          <span>FSARAP</span>
+        </div>
+        <p class="text-muted" style="font-size: 0.85rem;">
+          Faculty of Science Academic Repository and Assessment Portal.  
+          Niger Delta University, Wilberforce Island, Bayelsa State, Nigeria.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="mb-2" style="font-size: 1rem;">Quick Links</h4>
+        <ul style="list-style: none; font-size: 0.9rem;" class="flex flex-col gap-1">
+          <li><a href="repository.html">Lecture Notes</a></li>
+          <li><a href="quizzes.html">Online Quizzes</a></li>
+          <li><a href="auth.html?mode=login">Student Login</a></li>
+          <li><a href="auth.html?mode=register">Lecturer Portal</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="mb-2" style="font-size: 1rem;">Academic Levels</h4>
+        <ul style="list-style: none; font-size: 0.9rem;" class="flex flex-col gap-1">
+          <li><a href="repository.html?level=100">100 Level Materials</a></li>
+          <li><a href="repository.html?level=200">200 Level Materials</a></li>
+          <li><a href="repository.html?level=300">300 Level Materials</a></li>
+          <li><a href="repository.html?level=400">400 Level Materials</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="mb-2" style="font-size: 1rem;">Support & Contact</h4>
+        <p class="text-muted" style="font-size: 0.85rem;">
+          FSARAP System Project Support<br>
+          Deanery, Faculty of Science<br>
+          Niger Delta University, Wilberforce Island, Bayelsa State
+        </p>
+      </div>
+    </div>
+
+    <div class="container text-center pt-3" style="border-top: 1px solid var(--border-color); font-size: 0.85rem;" class="text-muted">
+      &copy; 2026 Faculty of Science, Niger Delta University (NDU). All rights reserved. Final Year Project Implementation.
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
