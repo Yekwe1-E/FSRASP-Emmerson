@@ -369,50 +369,49 @@ function initOfflineSQLiteSchema(db) {
 
   // Departments
   const depts = [
-    ['dept-1', 'Department of Computer Science', 'CSC', 'Computer Science, Cyber Security & Software Engineering'],
-    ['dept-2', 'Department of Microbiology', 'MCB', 'Microbiology, Environmental & Medical Microbiology'],
-    ['dept-3', 'Department of Biochemistry', 'BCH', 'Biochemistry & Molecular Biology'],
-    ['dept-4', 'Department of Pure and Applied Chemistry', 'CHM', 'Analytical & Organic Chemistry'],
-    ['dept-5', 'Department of Physics', 'PHY', 'Physics, Geophysics & Electronics'],
-    ['dept-6', 'Department of Geology', 'GLY', 'Geology & Petroleum Geosciences'],
-    ['dept-7', 'Department of Biological Sciences', 'BIO', 'Plant Science, Zoology & Marine Biology']
+    ['11111111-1111-1111-1111-111111111111', 'Department of Computer Science', 'CSC', 'Computer Science, Cyber Security & Software Engineering'],
+    ['22222222-2222-2222-2222-222222222222', 'Department of Microbiology', 'MCB', 'Microbiology, Environmental & Medical Microbiology'],
+    ['33333333-3333-3333-3333-333333333333', 'Department of Biochemistry', 'BCH', 'Biochemistry & Molecular Biology'],
+    ['44444444-4444-4444-4444-444444444444', 'Department of Pure and Applied Chemistry', 'CHM', 'Analytical & Organic Chemistry'],
+    ['55555555-5555-5555-5555-555555555555', 'Department of Physics', 'PHY', 'Physics, Geophysics & Electronics'],
+    ['66666666-6666-6666-6666-666666666666', 'Department of Geology', 'GLY', 'Geology & Petroleum Geosciences'],
+    ['77777777-7777-7777-7777-777777777777', 'Department of Biological Sciences', 'BIO', 'Plant Science, Zoology & Marine Biology']
   ];
   const ins_dept = db.prepare('INSERT OR IGNORE INTO departments (id, name, code, description) VALUES (?, ?, ?, ?)');
   depts.forEach(d => ins_dept.run(d));
 
   // Academic Levels
   const levels = [
-    ['lvl-100', '100', '100 Level'],
-    ['lvl-200', '200', '200 Level'],
-    ['lvl-300', '300', '300 Level'],
-    ['lvl-400', '400', '400 Level'],
-    ['lvl-500', '500', '500 Level']
+    ['10000000-0000-0000-0000-000000000100', '100', '100 Level'],
+    ['20000000-0000-0000-0000-000000000200', '200', '200 Level'],
+    ['30000000-0000-0000-0000-000000000300', '300', '300 Level'],
+    ['40000000-0000-0000-0000-000000000400', '400', '400 Level'],
+    ['50000000-0000-0000-0000-000000000500', '500', '500 Level']
   ];
   const ins_level = db.prepare('INSERT OR IGNORE INTO academic_levels (id, level_code, level_name) VALUES (?, ?, ?)');
   levels.forEach(l => ins_level.run(l));
 
   // Semesters
-  db.prepare('INSERT OR IGNORE INTO semesters (id, name, code) VALUES (?, ?, ?)').run('sem-1', 'First Semester', '1');
-  db.prepare('INSERT OR IGNORE INTO semesters (id, name, code) VALUES (?, ?, ?)').run('sem-2', 'Second Semester', '2');
+  db.prepare('INSERT OR IGNORE INTO semesters (id, name, code) VALUES (?, ?, ?)').run('e1111111-1111-1111-1111-111111111111', 'First Semester', 'SEM1');
+  db.prepare('INSERT OR IGNORE INTO semesters (id, name, code) VALUES (?, ?, ?)').run('e2222222-2222-2222-2222-222222222222', 'Second Semester', 'SEM2');
 
   // Academic Sessions
-  db.prepare('INSERT OR IGNORE INTO academic_sessions (id, session_name, is_current) VALUES (?, ?, ?)').run('sess-2025-2026', '2025/2026', 1);
-  db.prepare('INSERT OR IGNORE INTO academic_sessions (id, session_name, is_current) VALUES (?, ?, ?)').run('sess-2024-2025', '2024/2025', 0);
+  db.prepare('INSERT OR IGNORE INTO academic_sessions (id, session_name, is_current) VALUES (?, ?, ?)').run('a1111111-1111-1111-1111-111111111111', '2024/2025', 1);
 
   // Default Accounts (password: Password123!)
   const hash = bcrypt.hashSync('Password123!', 10);
 
   db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,is_approved,is_active)
               VALUES (?,?,?,?,?,?,1,1)`)
-    .run('usr-admin-1', 'admin@ndu.edu.ng', hash, 'Super', 'Administrator', 'super_admin');
+    .run('u1111111-1111-1111-1111-111111111111', 'admin@ndu.edu.ng', hash, 'Super', 'Administrator', 'super_admin');
 
   db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,department_id,staff_id,is_approved,is_active)
               VALUES (?,?,?,?,?,?,?,?,1,1)`)
-    .run('usr-lec-1', 'lecturer@ndu.edu.ng', hash, 'Dr. Ebimowei', 'Oboro', 'lecturer', 'dept-1', 'NDU/STAFF/CSC/042');
+    .run('u2222222-2222-2222-2222-222222222222', 'lecturer@ndu.edu.ng', hash, 'Dr. Ebimowei', 'Oboro', 'lecturer', '11111111-1111-1111-1111-111111111111', 'NDU/STAFF/CSC/042');
 
   db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,department_id,level_id,matric_number,is_approved,is_active)
               VALUES (?,?,?,?,?,?,?,?,?,1,1)`)
-    .run('usr-stu-1', 'student@ndu.edu.ng', hash, 'Tari', 'Ebi', 'student', 'dept-1', 'lvl-300', 'NDU/2022/CSC/015');
+    .run('u3333333-3333-3333-3333-333333333333', 'student@ndu.edu.ng', hash, 'Tari', 'Ebi', 'student', '11111111-1111-1111-1111-111111111111', '30000000-0000-0000-0000-000000000300', 'NDU/2022/CSC/015');
 
   // Courses (All 8 Departments)
   const addCourse = (id, code, title, units, dept, lvl, sem) => {
