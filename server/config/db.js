@@ -1,0 +1,524 @@
+const { Pool } = require('pg');
+const Database = require('better-sqlite3');
+const path = require('path');
+const fs = require('fs');
+const bcrypt = require('bcryptjs');
+require('dotenv').config();
+
+let mode = 'sqlite';
+let pool = null;
+let sqliteDb = null;
+
+// Path for offline SQLite database file
+const dbFilePath = path.join(__dirname, '../../database/fsarap.sqlite');
+const dbDir = path.dirname(dbFilePath);
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
+// Use PostgreSQL only if DATABASE_URL is set to a real, non-placeholder value
+const usePostgres = process.env.DATABASE_URL &&
+  !process.env.DATABASE_URL.includes('your-supabase') &&
+  !process.env.DATABASE_URL.includes('localhost:5432/fsarap') &&
+  !process.env.DATABASE_URL.includes('[YOUR-PASSWORD]') &&
+  !process.env.DATABASE_URL.includes('[YOUR_PASSWORD]');
+
+if (usePostgres) {
+  try {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 5000
+    });
+    pool.on('error', (err) => {
+      console.warn('⚠️ PostgreSQL Connection Notice:', err.message);
+    });
+    mode = 'postgres';
+    console.log('🔗 Configured for Remote Supabase PostgreSQL Connection.');
+  } catch (e) {
+    console.warn('⚠️ Failed to initialize PostgreSQL pool. Falling back to Offline SQLite.');
+    mode = 'sqlite';
+  }
+}
+
+if (mode === 'sqlite') {
+  console.log(`\n📁 Operating in 100% Offline Mode.\n   SQLite Database: ${dbFilePath}\n`);
+  sqliteDb = new Database(dbFilePath);
+  sqliteDb.pragma('foreign_keys = ON');
+  sqliteDb.pragma('journal_mode = WAL');
+  initOfflineSQLiteSchema(sqliteDb);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UUID helper for SQLite
+// ─────────────────────────────────────────────────────────────────────────────
+function generateUUID() {
+  const bytes = () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+  const b4 = () => `${bytes()}${bytes()}${bytes()}${bytes()}`;
+  const b2 = () => `${bytes()}${bytes()}`;
+  return `${b4()}-${b2()}-4${bytes().slice(1)}-${['8','9','a','b'][Math.floor(Math.random()*4)]}${bytes().slice(1)}-${b4()}${b2()}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Transform PostgreSQL SQL to SQLite dialect
+// ─────────────────────────────────────────────────────────────────────────────
+function transformSQL(sql) {
+  return sql
+    .replace(/gen_random_uuid\(\)/gi, "'__UUID__'")       // placeholder, replaced at runtime
+    .replace(/\bCURRENT_TIMESTAMP\b/gi, "datetime('now')")
+    .replace(/\$(\d+)/g, '?')
+    .replace(/::[\w_]+/g, '')                              // strip postgres casts
+    .replace(/\bILIKE\b/gi, 'LIKE')
+    .replace(/\bTRUE\b/g, '1')                             // SQLite boolean
+    .replace(/\bFALSE\b/g, '0')                            // SQLite boolean
+    .replace(/RETURNING\s+[\s\S]+$/i, '');                 // strip RETURNING clause
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Universal query function
+// ─────────────────────────────────────────────────────────────────────────────
+const query = async (text, params = []) => {
+  if (mode === 'postgres' && pool) {
+    try {
+      return await pool.query(text, params);
+    } catch (err) {
+      if (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.message?.includes('ENOTFOUND')) {
+        console.warn(`⚠️ PostgreSQL network connection failed (${err.message}). Seamlessly using active local database fallback.`);
+        mode = 'sqlite';
+        if (!sqliteDb) {
+          sqliteDb = new Database(dbFilePath);
+          sqliteDb.pragma('foreign_keys = ON');
+          sqliteDb.pragma('journal_mode = WAL');
+          initOfflineSQLiteSchema(sqliteDb);
+        }
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  const hasReturning = /RETURNING/i.test(text);
+  const isInsert = /^\s*INSERT/i.test(text);
+  const isUpdate = /^\s*UPDATE/i.test(text);
+  const isSelect = /^\s*(SELECT|PRAGMA|WITH)/i.test(text);
+  const isDelete = /^\s*DELETE/i.test(text);
+
+  // Replace gen_random_uuid() in SQL with a real UUID
+  const newId = generateUUID();
+  let transformedSQL = transformSQL(text).replace(/'__UUID__'/g, `'${newId}'`);
+
+  // Replace params placeholders one by one and convert boolean values for SQLite compatibility
+  let paramArray = params.map(val => typeof val === 'boolean' ? (val ? 1 : 0) : val);
+
+  try {
+    if (isSelect) {
+      const rows = sqliteDb.prepare(transformedSQL).all(paramArray);
+      const converted = rows.map(convertBooleans);
+      return { rows: converted, rowCount: converted.length };
+    }
+
+    const stmt = sqliteDb.prepare(transformedSQL);
+    const info = stmt.run(paramArray);
+
+    if (!hasReturning) {
+      return { rows: [], rowCount: info.changes };
+    }
+
+    // Emulate RETURNING: fetch inserted/updated row
+    let returnedRows = [];
+    if (isInsert) {
+      // Try fetching by known id parameter, or use lastInsertRowid
+      const tableName = getTableName(text);
+      if (tableName) {
+        // The inserted id was either in params or was the generated UUID
+        const idToFetch = text.includes('gen_random_uuid()') ? newId : (paramArray[0] || null);
+        if (idToFetch) {
+          returnedRows = sqliteDb.prepare(`SELECT * FROM ${tableName} WHERE id = ?`).all(idToFetch);
+        } else {
+          returnedRows = sqliteDb.prepare(`SELECT * FROM ${tableName} WHERE rowid = ?`).all(info.lastInsertRowid);
+        }
+      }
+    } else if (isUpdate || isDelete) {
+      const tableName = getTableName(text);
+      // For updates, last param is usually the id (WHERE id = $n)
+      const idParam = paramArray[paramArray.length - 1];
+      if (tableName && idParam) {
+        returnedRows = sqliteDb.prepare(`SELECT * FROM ${tableName} WHERE id = ?`).all(idParam);
+      }
+    }
+
+    return { rows: returnedRows.map(convertBooleans), rowCount: info.changes };
+
+  } catch (error) {
+    console.error('SQLite Query Error:', error.message);
+    console.error('Original SQL:', text);
+    console.error('Transformed SQL:', transformedSQL);
+    console.error('Params:', paramArray);
+    throw error;
+  }
+};
+
+function getTableName(sql) {
+  let m = sql.match(/INSERT\s+INTO\s+"?(\w+)"?/i);
+  if (m) return m[1];
+  m = sql.match(/UPDATE\s+"?(\w+)"?/i);
+  if (m) return m[1];
+  m = sql.match(/DELETE\s+FROM\s+"?(\w+)"?/i);
+  if (m) return m[1];
+  return null;
+}
+
+function convertBooleans(row) {
+  const boolCols = ['is_approved', 'is_active', 'passed', 'is_bookmarked', 'is_correct',
+                    'is_current', 'randomize_questions', 'randomize_options',
+                    'show_explanation', 'is_active', 'is_read'];
+  const out = { ...row };
+  boolCols.forEach(k => {
+    if (k in out) out[k] = Boolean(out[k]);
+  });
+  return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Offline SQLite Schema + Seed
+// ─────────────────────────────────────────────────────────────────────────────
+function initOfflineSQLiteSchema(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS departments (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      code TEXT UNIQUE NOT NULL,
+      description TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS academic_levels (
+      id TEXT PRIMARY KEY,
+      level_code TEXT UNIQUE NOT NULL,
+      level_name TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS semesters (
+      id TEXT PRIMARY KEY,
+      name TEXT UNIQUE NOT NULL,
+      code TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS academic_sessions (
+      id TEXT PRIMARY KEY,
+      session_name TEXT UNIQUE NOT NULL,
+      is_current INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      role TEXT DEFAULT 'student',
+      department_id TEXT,
+      level_id TEXT,
+      staff_id TEXT,
+      matric_number TEXT,
+      avatar_url TEXT,
+      is_approved INTEGER DEFAULT 1,
+      is_active INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      last_login TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS courses (
+      id TEXT PRIMARY KEY,
+      course_code TEXT UNIQUE NOT NULL,
+      course_title TEXT NOT NULL,
+      credit_units INTEGER NOT NULL DEFAULT 3,
+      department_id TEXT NOT NULL,
+      level_id TEXT NOT NULL,
+      semester_id TEXT NOT NULL,
+      lecturer_id TEXT,
+      is_active INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS materials (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      course_id TEXT NOT NULL,
+      department_id TEXT NOT NULL,
+      level_id TEXT NOT NULL,
+      semester_id TEXT NOT NULL,
+      session_id TEXT NOT NULL,
+      uploader_id TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT 'Lecture Notes',
+      file_url TEXT NOT NULL,
+      file_path TEXT NOT NULL,
+      file_type TEXT NOT NULL,
+      file_size INTEGER NOT NULL,
+      download_count INTEGER DEFAULT 0,
+      approval_status TEXT DEFAULT 'approved',
+      rejection_reason TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS material_bookmarks (
+      id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      material_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(material_id, user_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS material_downloads (
+      id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      material_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      downloaded_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS quizzes (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      course_id TEXT NOT NULL,
+      creator_id TEXT NOT NULL,
+      duration_minutes INTEGER DEFAULT 30,
+      total_marks REAL DEFAULT 100,
+      pass_percentage REAL DEFAULT 50.0,
+      max_attempts INTEGER DEFAULT 3,
+      randomize_questions INTEGER DEFAULT 1,
+      randomize_options INTEGER DEFAULT 1,
+      show_explanation INTEGER DEFAULT 1,
+      is_active INTEGER DEFAULT 1,
+      start_time TEXT,
+      end_time TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS quiz_questions (
+      id TEXT PRIMARY KEY,
+      quiz_id TEXT NOT NULL,
+      question_text TEXT NOT NULL,
+      question_type TEXT DEFAULT 'mcq',
+      marks REAL DEFAULT 1.0,
+      difficulty TEXT DEFAULT 'medium',
+      explanation TEXT,
+      correct_answer_text TEXT,
+      order_index INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS quiz_options (
+      id TEXT PRIMARY KEY,
+      question_id TEXT NOT NULL,
+      option_text TEXT NOT NULL,
+      is_correct INTEGER DEFAULT 0,
+      order_index INTEGER DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS quiz_attempts (
+      id TEXT PRIMARY KEY,
+      quiz_id TEXT NOT NULL,
+      student_id TEXT NOT NULL,
+      attempt_number INTEGER NOT NULL,
+      started_at TEXT DEFAULT (datetime('now')),
+      submitted_at TEXT,
+      score_achieved REAL DEFAULT 0,
+      percentage REAL DEFAULT 0,
+      passed INTEGER DEFAULT 0,
+      status TEXT DEFAULT 'in_progress'
+    );
+
+    CREATE TABLE IF NOT EXISTS quiz_answers (
+      id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      attempt_id TEXT NOT NULL,
+      question_id TEXT NOT NULL,
+      selected_option_id TEXT,
+      text_answer TEXT,
+      is_correct INTEGER DEFAULT 0,
+      marks_awarded REAL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      user_id TEXT,
+      action TEXT NOT NULL,
+      details TEXT,
+      ip_address TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      type TEXT DEFAULT 'info',
+      is_read INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+
+  try {
+    db.exec(`ALTER TABLE courses ADD COLUMN lecturer_id TEXT;`);
+  } catch (e) {
+    // Column already exists
+  }
+
+  // Only seed if departments table is empty
+  const count = db.prepare('SELECT COUNT(*) as c FROM departments').get().c;
+  if (count > 0) return;
+
+  console.log('🌱 Seeding offline SQLite database with Faculty of Science data...');
+
+  const u = (pre) => `${pre}-${generateUUID().slice(0, 8)}`;
+
+  // Departments
+  const depts = [
+    ['dept-1', 'Department of Computer Science', 'CSC', 'Computer Science, Cyber Security & Software Engineering'],
+    ['dept-2', 'Department of Microbiology', 'MCB', 'Microbiology, Environmental & Medical Microbiology'],
+    ['dept-3', 'Department of Biochemistry', 'BCH', 'Biochemistry & Molecular Biology'],
+    ['dept-4', 'Department of Pure and Applied Chemistry', 'CHM', 'Analytical & Organic Chemistry'],
+    ['dept-5', 'Department of Physics', 'PHY', 'Physics, Geophysics & Electronics'],
+    ['dept-6', 'Department of Geology', 'GLY', 'Geology & Petroleum Geosciences'],
+    ['dept-7', 'Department of Biological Sciences', 'BIO', 'Plant Science, Zoology & Marine Biology']
+  ];
+  const ins_dept = db.prepare('INSERT OR IGNORE INTO departments (id, name, code, description) VALUES (?, ?, ?, ?)');
+  depts.forEach(d => ins_dept.run(d));
+
+  // Academic Levels
+  const levels = [
+    ['lvl-100', '100', '100 Level'],
+    ['lvl-200', '200', '200 Level'],
+    ['lvl-300', '300', '300 Level'],
+    ['lvl-400', '400', '400 Level'],
+    ['lvl-500', '500', '500 Level']
+  ];
+  const ins_level = db.prepare('INSERT OR IGNORE INTO academic_levels (id, level_code, level_name) VALUES (?, ?, ?)');
+  levels.forEach(l => ins_level.run(l));
+
+  // Semesters
+  db.prepare('INSERT OR IGNORE INTO semesters (id, name, code) VALUES (?, ?, ?)').run('sem-1', 'First Semester', '1');
+  db.prepare('INSERT OR IGNORE INTO semesters (id, name, code) VALUES (?, ?, ?)').run('sem-2', 'Second Semester', '2');
+
+  // Academic Sessions
+  db.prepare('INSERT OR IGNORE INTO academic_sessions (id, session_name, is_current) VALUES (?, ?, ?)').run('sess-2025-2026', '2025/2026', 1);
+  db.prepare('INSERT OR IGNORE INTO academic_sessions (id, session_name, is_current) VALUES (?, ?, ?)').run('sess-2024-2025', '2024/2025', 0);
+
+  // Default Accounts (password: Password123!)
+  const hash = bcrypt.hashSync('Password123!', 10);
+
+  db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,is_approved,is_active)
+              VALUES (?,?,?,?,?,?,1,1)`)
+    .run('usr-admin-1', 'admin@ndu.edu.ng', hash, 'Super', 'Administrator', 'super_admin');
+
+  db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,department_id,staff_id,is_approved,is_active)
+              VALUES (?,?,?,?,?,?,?,?,1,1)`)
+    .run('usr-lec-1', 'lecturer@ndu.edu.ng', hash, 'Dr. Ebimowei', 'Oboro', 'lecturer', 'dept-1', 'NDU/STAFF/CSC/042');
+
+  db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,department_id,level_id,matric_number,is_approved,is_active)
+              VALUES (?,?,?,?,?,?,?,?,?,1,1)`)
+    .run('usr-stu-1', 'student@ndu.edu.ng', hash, 'Tari', 'Ebi', 'student', 'dept-1', 'lvl-300', 'NDU/2022/CSC/015');
+
+  // Courses
+  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
+              VALUES (?,?,?,?,?,?,?,?)`)
+    .run('crs-csc111', 'CSC 111', 'Introduction to Computer Science & Algorithms', 3, 'dept-1', 'lvl-100', 'sem-1', 'usr-lec-1');
+
+  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
+              VALUES (?,?,?,?,?,?,?,?)`)
+    .run('crs-csc212', 'CSC 212', 'Object-Oriented Programming', 3, 'dept-1', 'lvl-200', 'sem-2', 'usr-lec-1');
+
+  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
+              VALUES (?,?,?,?,?,?,?,?)`)
+    .run('crs-csc311', 'CSC 311', 'Data Structures and Algorithms II', 3, 'dept-1', 'lvl-300', 'sem-1', 'usr-lec-1');
+
+  db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
+              VALUES (?,?,?,?,?,?,?,?)`)
+    .run('crs-mcb211', 'MCB 211', 'General Microbiology I', 3, 'dept-2', 'lvl-200', 'sem-1', 'usr-lec-1');
+
+  // Sample Materials Seed
+  db.prepare(`INSERT OR IGNORE INTO materials (id, title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run('mat-1', 'CSC 111 Comprehensive Lecture Notes', 'Introduction to computer science fundamentals, boolean logic, and algorithms.', 'crs-csc111', 'dept-1', 'lvl-100', 'sem-1', 'sess-2025-2026', 'usr-lec-1', 'Lecture Notes', '/uploads/CSC111_Notes.pdf', 'CSC/100L/CSC111_Notes.pdf', 'pdf', 2450000, 'approved');
+
+  db.prepare(`INSERT OR IGNORE INTO materials (id, title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
+              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run('mat-2', 'MCB 211 General Microbiology Manual', 'Practical guide for general microbiology techniques and microscopy.', 'crs-mcb211', 'dept-2', 'lvl-200', 'sem-1', 'sess-2025-2026', 'usr-lec-1', 'Lab Guides', '/uploads/MCB211_Manual.pdf', 'MCB/200L/MCB211_Manual.pdf', 'pdf', 1850000, 'approved');
+
+  // Sample Quiz
+  db.prepare(`INSERT OR IGNORE INTO quizzes (id,title,description,course_id,creator_id,duration_minutes,total_marks,pass_percentage,max_attempts)
+              VALUES (?,?,?,?,?,?,?,?,?)`)
+    .run('q-1', 'CSC 111 Mid-Semester Self-Assessment',
+         'Test your understanding of basic computer science concepts.',
+         'crs-csc111', 'usr-lec-1', 15, 10, 50, 3);
+
+  const q1 = generateUUID();
+  db.prepare(`INSERT OR IGNORE INTO quiz_questions (id,quiz_id,question_text,question_type,marks,explanation,order_index)
+              VALUES (?,?,?,?,?,?,?)`)
+    .run(q1, 'q-1', 'Which component is known as the Brain of the computer?', 'mcq', 1.0,
+         'The CPU (Central Processing Unit) processes all instructions.', 1);
+
+  db.prepare('INSERT OR IGNORE INTO quiz_options (id,question_id,option_text,is_correct,order_index) VALUES (?,?,?,?,?)')
+    .run(`${q1}-a`, q1, 'Central Processing Unit (CPU)', 1, 1);
+  db.prepare('INSERT OR IGNORE INTO quiz_options (id,question_id,option_text,is_correct,order_index) VALUES (?,?,?,?,?)')
+    .run(`${q1}-b`, q1, 'Random Access Memory (RAM)', 0, 2);
+  db.prepare('INSERT OR IGNORE INTO quiz_options (id,question_id,option_text,is_correct,order_index) VALUES (?,?,?,?,?)')
+    .run(`${q1}-c`, q1, 'Hard Disk Drive (HDD)', 0, 3);
+  db.prepare('INSERT OR IGNORE INTO quiz_options (id,question_id,option_text,is_correct,order_index) VALUES (?,?,?,?,?)')
+    .run(`${q1}-d`, q1, 'Graphics Processing Unit (GPU)', 0, 4);
+
+  const q2 = generateUUID();
+  db.prepare(`INSERT OR IGNORE INTO quiz_questions (id,quiz_id,question_text,question_type,marks,explanation,order_index)
+              VALUES (?,?,?,?,?,?,?)`)
+    .run(q2, 'q-1', 'What does RAM stand for?', 'mcq', 1.0, 'RAM = Random Access Memory — temporary storage.', 2);
+
+  db.prepare('INSERT OR IGNORE INTO quiz_options (id,question_id,option_text,is_correct,order_index) VALUES (?,?,?,?,?)')
+    .run(`${q2}-a`, q2, 'Random Access Memory', 1, 1);
+  db.prepare('INSERT OR IGNORE INTO quiz_options (id,question_id,option_text,is_correct,order_index) VALUES (?,?,?,?,?)')
+    .run(`${q2}-b`, q2, 'Read And Modify', 0, 2);
+  db.prepare('INSERT OR IGNORE INTO quiz_options (id,question_id,option_text,is_correct,order_index) VALUES (?,?,?,?,?)')
+    .run(`${q2}-c`, q2, 'Random Arithmetic Module', 0, 3);
+  db.prepare('INSERT OR IGNORE INTO quiz_options (id,question_id,option_text,is_correct,order_index) VALUES (?,?,?,?,?)')
+    .run(`${q2}-d`, q2, 'Remote Access Module', 0, 4);
+
+  console.log('✅ Offline SQLite database seeded successfully!');
+  console.log('   📧 Admin:    admin@ndu.edu.ng    / Password123!');
+  console.log('   📧 Lecturer: lecturer@ndu.edu.ng / Password123!');
+  console.log('   📧 Student:  student@ndu.edu.ng  / Password123!');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Supabase Client Initialization
+// ─────────────────────────────────────────────────────────────────────────────
+const { createClient } = require('@supabase/supabase-js');
+
+let supabase;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (supabaseUrl && supabaseKey && !supabaseUrl.includes('xyzplaceholder') && !supabaseKey.includes('placeholder')) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('⚡ Connected to Supabase Cloud Client (URL: ' + supabaseUrl + ')');
+  } catch (err) {
+    console.warn('⚠️ Could not initialize Supabase client:', err.message);
+  }
+}
+
+if (!supabase) {
+  supabase = {
+    storage: {
+      from: () => ({
+        upload: async () => ({ error: { message: 'Offline mode: Supabase Storage not available.' } }),
+        getPublicUrl: (p) => ({ data: { publicUrl: `/uploads/${p}` } }),
+        remove: async () => ({})
+      })
+    }
+  };
+}
+
+module.exports = { pool, query, supabase };
