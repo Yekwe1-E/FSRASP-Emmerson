@@ -401,8 +401,11 @@ function initOfflineSQLiteSchema(db) {
   // Academic Sessions
   db.prepare('INSERT OR IGNORE INTO academic_sessions (id, session_name, is_current) VALUES (?, ?, ?)').run('a1111111-1111-1111-1111-111111111111', '2024/2025', 1);
 
-  // Default Accounts (password: Password123!)
+  // Default Accounts
   const hash = bcrypt.hashSync('Yekwe12345@', 10);
+
+  // Update existing admin account if already present in database
+  db.prepare(`UPDATE users SET email = 'yekwe@ndu.edu.ng', password_hash = ? WHERE role = 'super_admin' OR id = 'u1111111-1111-1111-1111-111111111111'`).run(hash);
 
   db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,is_approved,is_active)
               VALUES (?,?,?,?,?,?,1,1)`)
