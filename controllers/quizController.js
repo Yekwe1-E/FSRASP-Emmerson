@@ -260,12 +260,59 @@ const getQuizForAttempt = async (req, res, next) => {
 };
 
 /**
- * Start Quiz Attempt
+ * Helper: Smart evaluation for short answer & fill in the blank questions
+ */
+function evaluateTextAnswer(userText, targetAnswer) {
+  if (!userText || !targetAnswer) return false;
+
+  const normalize = (str) =>
+    str.toLowerCase()
+       .replace(/[.,/#!$%^&*;:{}=\-_`~()?"']/g, '')
+       .replace(/\s+/g, ' ')
+       .trim();
+
+  const userClean = normalize(userText);
+  const targetClean = normalize(targetAnswer);
+
+  if (userClean === targetClean) return true;
+
+  // Split target by commas, slashes, or pipes for multi-option correct answers
+  const alternatives = targetAnswer.split(/[,/|]/).map(a => normalize(a)).filter(Boolean);
+  if (alternatives.some(alt => alt === userClean)) return true;
+
+  // Substring inclusion check for key phrases
+  if (userClean.length >= 3 && targetClean.length >= 3) {
+    if (userClean.includes(targetClean) || targetClean.includes(userClean)) return true;
+    if (alternatives.some(alt => alt.length >= 3 && (userClean.includes(alt) || alt.includes(userClean)))) return true;
+  }
+
+  // Keyword set overlap for descriptive short answers
+  const userWords = new Set(userClean.split(' ').filter(w => w.length > 2));
+  const targetWords = targetClean.split(' ').filter(w => w.length > 2);
+  
+  if (targetWords.length > 0) {
+    const matchedCount = targetWords.filter(w => userWords.has(w)).length;
+    if ((matchedCount / targetWords.length) >= 0.75) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Start Quiz Attempt (Restricted: Students only)
  */
 const startQuizAttempt = async (req, res, next) => {
   try {
     const { id } = req.params;
     const studentId = req.user.id;
+    const userRole = req.user.role;
+
+    if (['super_admin', 'faculty_admin', 'lecturer'].includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Admins and Lecturers cannot record official student quiz attempts. Only registered students are graded.'
+      });
+    }
 
     // Check attempts limit
     const attemptCountRes = await query(
@@ -299,7 +346,7 @@ const startQuizAttempt = async (req, res, next) => {
 const submitQuizAttempt = async (req, res, next) => {
   try {
     const { id } = req.params; // quiz_id
-    const { attempt_id, answers } = req.body; // answers = [{ question_id, selected_option_id, text_answer }]
+    const { attempt_id, answers } = req.body;
     const studentId = req.user.id;
 
     // Retrieve quiz and question correct options
@@ -340,7 +387,7 @@ const submitQuizAttempt = async (req, res, next) => {
 
     let totalScoreAchieved = 0;
 
-    // Grade each submitted answer
+    // Grade each submitted answer with smart evaluation
     if (Array.isArray(answers)) {
       for (const ans of answers) {
         const qInfo = questionMap[ans.question_id];
@@ -355,8 +402,7 @@ const submitQuizAttempt = async (req, res, next) => {
             marksAwarded = qInfo.marks;
           }
         } else if (['fill_blank', 'short_answer'].includes(qInfo.question_type)) {
-          if (ans.text_answer && qInfo.correct_answer_text && 
-              ans.text_answer.trim().toLowerCase() === qInfo.correct_answer_text.trim().toLowerCase()) {
+          if (evaluateTextAnswer(ans.text_answer, qInfo.correct_answer_text)) {
             isCorrect = true;
             marksAwarded = qInfo.marks;
           }

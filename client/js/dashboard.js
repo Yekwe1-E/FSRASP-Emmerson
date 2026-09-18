@@ -46,11 +46,17 @@ const loadAdminDashboard = async () => {
     const { users, repository, quizzes, pending_lecturers, users_list, audit_logs } = res.data;
 
     // Stat Cards
-    document.getElementById('stat-total-students').innerText = users.student_count || 0;
-    document.getElementById('stat-total-lecturers').innerText = users.lecturer_count || 0;
-    document.getElementById('stat-total-materials').innerText = repository.total_materials || 0;
-    document.getElementById('stat-total-downloads').innerText = repository.total_downloads || 0;
-    document.getElementById('stat-total-quizzes').innerText = quizzes.total_quizzes || 0;
+    const elStudents = document.getElementById('stat-total-students');
+    const elLecturers = document.getElementById('stat-total-lecturers');
+    const elMaterials = document.getElementById('stat-total-materials');
+    const elDownloads = document.getElementById('stat-total-downloads');
+    const elQuizzes = document.getElementById('stat-total-quizzes');
+
+    if (elStudents) elStudents.innerText = users?.student_count || 0;
+    if (elLecturers) elLecturers.innerText = users?.lecturer_count || 0;
+    if (elMaterials) elMaterials.innerText = repository?.total_materials || 0;
+    if (elDownloads) elDownloads.innerText = repository?.total_downloads || 0;
+    if (elQuizzes) elQuizzes.innerText = quizzes?.total_quizzes || 0;
 
     // Render Pending Lecturers Table
     const pendingTable = document.getElementById('pending-lecturers-table');

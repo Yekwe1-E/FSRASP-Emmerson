@@ -58,6 +58,9 @@ const loadQuizzesList = async () => {
         return;
       }
 
+      const session = getUserSession();
+      const isStaff = session && ['super_admin', 'faculty_admin', 'lecturer'].includes(session.user.role);
+
       container.innerHTML = res.data.map(q => `
         <div class="card card-hoverable flex flex-col justify-between">
           <div>
@@ -74,7 +77,10 @@ const loadQuizzesList = async () => {
               <span>❓ ${q.question_count || 0} Questions</span>
               <span>🎯 Pass Mark: ${q.pass_percentage}%</span>
             </div>
-            <a href="take-quiz.html?id=${q.id}" class="btn btn-accent btn-sm" style="width: 100%;">Take Quiz &rarr;</a>
+            ${isStaff 
+              ? `<a href="take-quiz.html?id=${q.id}&mode=preview" class="btn btn-outline btn-sm" style="width: 100%;">🔍 Preview Quiz (Staff)</a>`
+              : `<a href="take-quiz.html?id=${q.id}" class="btn btn-accent btn-sm" style="width: 100%;">Take Quiz &rarr;</a>`
+            }
           </div>
         </div>
       `).join('');

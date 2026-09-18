@@ -344,7 +344,6 @@ ON CONFLICT (code) DO NOTHING;
 INSERT INTO departments (name, code, faculty_id, description) VALUES
 ('Computer Science', 'CSC', '11111111-1111-1111-1111-111111111111', 'Department of Computer Science'),
 ('Microbiology', 'MCB', '11111111-1111-1111-1111-111111111111', 'Department of Microbiology'),
-('Biochemistry', 'BCH', '11111111-1111-1111-1111-111111111111', 'Department of Biochemistry'),
 ('Pure & Applied Chemistry', 'CHM', '11111111-1111-1111-1111-111111111111', 'Department of Pure and Applied Chemistry'),
 ('Physics', 'PHY', '11111111-1111-1111-1111-111111111111', 'Department of Physics'),
 ('Geology', 'GLY', '11111111-1111-1111-1111-111111111111', 'Department of Geology'),
@@ -357,8 +356,7 @@ INSERT INTO academic_levels (level_code, level_name) VALUES
 ('100', '100 Level'),
 ('200', '200 Level'),
 ('300', '300 Level'),
-('400', '400 Level'),
-('500', '500 Level')
+('400', '400 Level')
 ON CONFLICT (level_code) DO NOTHING;
 
 -- Semesters
@@ -374,10 +372,10 @@ INSERT INTO academic_sessions (session_name, is_current) VALUES
 ('2025/2026', FALSE)
 ON CONFLICT (session_name) DO NOTHING;
 
--- Super Admin User Seed (Password: AdminPass123! hashed via bcrypt)
+-- Super Admin User Seed (Email: yekwe@ndu.edu.ng, Password: Yekwe12345@ hashed via bcrypt)
 INSERT INTO users (first_name, last_name, email, password_hash, role, staff_id, is_active, is_approved)
-VALUES ('Super', 'Admin', 'admin@ndu.edu.ng', '$2a$10$5sL6TqQZ68i2l132K03PBeYQ94Zz5V1Y/JzY3H63M4K3X33.X2W6e', 'super_admin', 'NDU-FSC-001', TRUE, TRUE)
-ON CONFLICT (email) DO NOTHING;
+VALUES ('Super', 'Admin', 'yekwe@ndu.edu.ng', '$2a$10$uXCxVrq.ZseQW9uDIawZselKxii0iHZn0w3/0kD2CKxeq8uTG0CjO', 'super_admin', 'NDU-FSC-001', TRUE, TRUE)
+ON CONFLICT (email) DO UPDATE SET password_hash = '$2a$10$uXCxVrq.ZseQW9uDIawZselKxii0iHZn0w3/0kD2CKxeq8uTG0CjO';
 
 -- -----------------------------------------------------------------------------
 -- ROW LEVEL SECURITY (RLS) POLICIES FOR SUPABASE
