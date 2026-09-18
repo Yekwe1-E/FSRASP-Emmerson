@@ -57,7 +57,7 @@ function generateUUID() {
   const bytes = () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
   const b4 = () => `${bytes()}${bytes()}${bytes()}${bytes()}`;
   const b2 = () => `${bytes()}${bytes()}`;
-  return `${b4()}-${b2()}-4${bytes().slice(1)}-${['8','9','a','b'][Math.floor(Math.random()*4)]}${bytes().slice(1)}-${b4()}${b2()}`;
+  return `${b4()}-${b2()}-4${bytes().slice(1)}-${['8', '9', 'a', 'b'][Math.floor(Math.random() * 4)]}${bytes().slice(1)}-${b4()}${b2()}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -160,8 +160,8 @@ function getTableName(sql) {
 
 function convertBooleans(row) {
   const boolCols = ['is_approved', 'is_active', 'passed', 'is_bookmarked', 'is_correct',
-                    'is_current', 'randomize_questions', 'randomize_options',
-                    'show_explanation', 'is_active', 'is_read'];
+    'is_current', 'randomize_questions', 'randomize_options',
+    'show_explanation', 'is_active', 'is_read'];
   const out = { ...row };
   boolCols.forEach(k => {
     if (k in out) out[k] = Boolean(out[k]);
@@ -402,11 +402,11 @@ function initOfflineSQLiteSchema(db) {
   db.prepare('INSERT OR IGNORE INTO academic_sessions (id, session_name, is_current) VALUES (?, ?, ?)').run('a1111111-1111-1111-1111-111111111111', '2024/2025', 1);
 
   // Default Accounts (password: Password123!)
-  const hash = bcrypt.hashSync('Password123!', 10);
+  const hash = bcrypt.hashSync('Yekwe12345@', 10);
 
   db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,is_approved,is_active)
               VALUES (?,?,?,?,?,?,1,1)`)
-    .run('u1111111-1111-1111-1111-111111111111', 'admin@ndu.edu.ng', hash, 'Super', 'Administrator', 'super_admin');
+    .run('u1111111-1111-1111-1111-111111111111', 'yekwe@ndu.edu.ng', hash, 'Super', 'Administrator', 'super_admin');
 
   db.prepare(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,department_id,staff_id,is_approved,is_active)
               VALUES (?,?,?,?,?,?,?,?,1,1)`)
@@ -482,14 +482,14 @@ function initOfflineSQLiteSchema(db) {
   db.prepare(`INSERT OR IGNORE INTO quizzes (id,title,description,course_id,creator_id,duration_minutes,total_marks,pass_percentage,max_attempts)
               VALUES (?,?,?,?,?,?,?,?,?)`)
     .run('q-1', 'CSC 111 Mid-Semester Self-Assessment',
-         'Test your understanding of basic computer science concepts.',
-         'crs-csc111', 'usr-lec-1', 15, 10, 50, 3);
+      'Test your understanding of basic computer science concepts.',
+      'crs-csc111', 'usr-lec-1', 15, 10, 50, 3);
 
   const q1 = generateUUID();
   db.prepare(`INSERT OR IGNORE INTO quiz_questions (id,quiz_id,question_text,question_type,marks,explanation,order_index)
               VALUES (?,?,?,?,?,?,?)`)
     .run(q1, 'q-1', 'Which component is known as the Brain of the computer?', 'mcq', 1.0,
-         'The CPU (Central Processing Unit) processes all instructions.', 1);
+      'The CPU (Central Processing Unit) processes all instructions.', 1);
 
   db.prepare('INSERT OR IGNORE INTO quiz_options (id,question_id,option_text,is_correct,order_index) VALUES (?,?,?,?,?)')
     .run(`${q1}-a`, q1, 'Central Processing Unit (CPU)', 1, 1);
