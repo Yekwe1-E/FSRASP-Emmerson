@@ -370,12 +370,17 @@ function initOfflineSQLiteSchema(db) {
   const depts = [
     ['11111111-1111-1111-1111-111111111111', 'Department of Computer Science', 'CSC', 'Computer Science, Cyber Security & Software Engineering'],
     ['22222222-2222-2222-2222-222222222222', 'Department of Microbiology', 'MCB', 'Microbiology, Environmental & Medical Microbiology'],
-    ['33333333-3333-3333-3333-333333333333', 'Department of Biochemistry', 'BCH', 'Biochemistry & Molecular Biology'],
-    ['44444444-4444-4444-4444-444444444444', 'Department of Pure and Applied Chemistry', 'CHM', 'Analytical & Organic Chemistry'],
-    ['55555555-5555-5555-5555-555555555555', 'Department of Physics', 'PHY', 'Physics, Geophysics & Electronics'],
-    ['66666666-6666-6666-6666-666666666666', 'Department of Geology', 'GLY', 'Geology & Petroleum Geosciences'],
+    ['33333333-3333-3333-3333-333333333333', 'Department of Pure and Applied Chemistry', 'CHM', 'Analytical & Organic Chemistry'],
+    ['44444444-4444-4444-4444-444444444444', 'Department of Physics', 'PHY', 'Physics, Geophysics & Electronics'],
+    ['55555555-5555-5555-5555-555555555555', 'Department of Geology', 'GLY', 'Geology & Petroleum Geosciences'],
+    ['66666666-6666-6666-6666-666666666666', 'Department of Mathematics and Statistics', 'MTH', 'Pure Mathematics, Statistics & Applied Mathematics'],
     ['77777777-7777-7777-7777-777777777777', 'Department of Biological Sciences', 'BIO', 'Plant Science, Zoology & Marine Biology']
   ];
+  // Remove Biochemistry if previously seeded (migration safety)
+  db.prepare("DELETE FROM departments WHERE code = 'BCH'").run();
+  db.prepare("DELETE FROM courses WHERE course_code LIKE 'BCH%'").run();
+  db.prepare("DELETE FROM materials WHERE file_path LIKE 'BCH/%'").run();
+  db.prepare("DELETE FROM academic_levels WHERE level_code = '500'").run();
   const ins_dept = db.prepare('INSERT OR IGNORE INTO departments (id, name, code, description) VALUES (?, ?, ?, ?)');
   depts.forEach(d => ins_dept.run(d));
 
@@ -384,8 +389,7 @@ function initOfflineSQLiteSchema(db) {
     ['10000000-0000-0000-0000-000000000100', '100', '100 Level'],
     ['20000000-0000-0000-0000-000000000200', '200', '200 Level'],
     ['30000000-0000-0000-0000-000000000300', '300', '300 Level'],
-    ['40000000-0000-0000-0000-000000000400', '400', '400 Level'],
-    ['50000000-0000-0000-0000-000000000500', '500', '500 Level']
+    ['40000000-0000-0000-0000-000000000400', '400', '400 Level']
   ];
   const ins_level = db.prepare('INSERT OR IGNORE INTO academic_levels (id, level_code, level_name) VALUES (?, ?, ?)');
   levels.forEach(l => ins_level.run(l));
@@ -412,7 +416,7 @@ function initOfflineSQLiteSchema(db) {
               VALUES (?,?,?,?,?,?,?,?,?,1,1)`)
     .run('u3333333-3333-3333-3333-333333333333', 'student@ndu.edu.ng', hash, 'Tari', 'Ebi', 'student', '11111111-1111-1111-1111-111111111111', '30000000-0000-0000-0000-000000000300', 'NDU/2022/CSC/015');
 
-  // Courses (All 8 Departments)
+  // Courses (All 7 Departments)
   const addCourse = (id, code, title, units, dept, lvl, sem) => {
     db.prepare(`INSERT OR IGNORE INTO courses (id,course_code,course_title,credit_units,department_id,level_id,semester_id,lecturer_id)
                 VALUES (?,?,?,?,?,?,?,?)`).run(id, code, title, units, dept, lvl, sem, 'usr-lec-1');
@@ -430,9 +434,10 @@ function initOfflineSQLiteSchema(db) {
   addCourse('crs-mcb312', 'MCB 312', 'Environmental & Aquatic Microbiology', 3, 'dept-2', 'lvl-300', 'sem-2');
   addCourse('crs-mcb411', 'MCB 411', 'Medical Microbiology & Diagnostic Pathology', 3, 'dept-2', 'lvl-400', 'sem-1');
 
-  // Biochemistry
-  addCourse('crs-bch201', 'BCH 201', 'General Biochemistry & Biomolecules', 3, 'dept-3', 'lvl-200', 'sem-1');
-  addCourse('crs-bch311', 'BCH 311', 'Enzymology & Intermediary Metabolism', 3, 'dept-3', 'lvl-300', 'sem-1');
+  // Mathematics & Statistics (moved up)
+  addCourse('crs-mth110b', 'MTH 110', 'Elementary Mathematics I (Algebra & Trig)', 3, 'dept-6', 'lvl-100', 'sem-1');
+  addCourse('crs-mth211b', 'MTH 211', 'Mathematical Methods I', 3, 'dept-6', 'lvl-200', 'sem-1');
+  addCourse('crs-mth311', 'MTH 311', 'Real Analysis & Abstract Algebra', 3, 'dept-6', 'lvl-300', 'sem-1');
 
   // Pure & Applied Chemistry
   addCourse('crs-chm101', 'CHM 101', 'General Chemistry I', 3, 'dept-4', 'lvl-100', 'sem-1');
@@ -467,8 +472,7 @@ function initOfflineSQLiteSchema(db) {
   addMat('mat-4', 'CSC 311 Data Structures & Algorithms II Handbook', 'Advanced tree structures, graph traversal, sorting algorithms, and dynamic programming.', 'crs-csc311', 'dept-1', 'lvl-300', 'sem-1', 'Lecture Notes', '/uploads/CSC311_Notes.pdf', 'CSC/300L/CSC311_Notes.pdf');
   addMat('mat-5', 'CSC 411 Operating Systems Architecture Notes', 'Process management, thread synchronization, memory management, and file systems.', 'crs-csc411', 'dept-1', 'lvl-400', 'sem-1', 'Lecture Notes', '/uploads/CSC411_Notes.pdf', 'CSC/400L/CSC411_Notes.pdf');
   addMat('mat-6', 'CSC 415 Computer Performance Evaluation Past Questions', '2021-2024 Past Examination Questions with Worked Solutions.', 'crs-csc415', 'dept-1', 'lvl-400', 'sem-1', 'Past Questions', '/uploads/CSC415_Past_Questions.pdf', 'CSC/400L/CSC415_Past_Questions.pdf');
-  addMat('mat-7', 'BCH 201 Biomolecules & Cell Biochemistry', 'Structure and function of proteins, nucleic acids, carbohydrates, and lipids.', 'crs-bch201', 'dept-3', 'lvl-200', 'sem-1', 'Lecture Notes', '/uploads/BCH201_Notes.pdf', 'BCH/200L/BCH201_Notes.pdf');
-  addMat('mat-8', 'CHM 101 General Chemistry Module I', 'Atomic structure, stoichiometry, chemical equilibrium, and periodic table trends.', 'crs-chm101', 'dept-4', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/CHM101_Module.pdf', 'CHM/100L/CHM101_Module.pdf');
+  addMat('mat-8', 'CHM 101 General Chemistry Module I', 'Atomic structure, stoichiometry, chemical equilibrium, and periodic table trends.', 'crs-chm101', 'dept-3', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/CHM101_Module.pdf', 'CHM/100L/CHM101_Module.pdf');
   addMat('mat-9', 'PHY 101 Mechanics & Hydrostatics Lecture Notes', 'Vectors, Newton laws of motion, work-energy theorem, and fluid dynamics.', 'crs-phy101', 'dept-5', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/PHY101_Notes.pdf', 'PHY/100L/PHY101_Notes.pdf');
   addMat('mat-10', 'GLY 101 Physical Geology Field Guide', 'Identification of igneous, sedimentary, metamorphic rocks, and plate tectonics.', 'crs-gly101', 'dept-6', 'lvl-100', 'sem-1', 'Lab Guides', '/uploads/GLY101_Guide.pdf', 'GLY/100L/GLY101_Guide.pdf');
   addMat('mat-11', 'MTH 110 Algebra & Trigonometry Handout', 'Polynomials, binomial theorem, complex numbers, and trigonometric identities.', 'crs-mth110', 'dept-7', 'lvl-100', 'sem-1', 'Lecture Notes', '/uploads/MTH110_Handout.pdf', 'MTH/100L/MTH110_Handout.pdf');

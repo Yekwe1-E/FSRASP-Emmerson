@@ -13,10 +13,10 @@ This document defines the formal Software Requirements Specification (SRS) for t
 FSARAP provides digital storage, categorization, multi-criteria searching, and instant downloading of lecture notes, practical manuals, past questions, and lab guides across all seven (7) academic departments in the Faculty of Science:
 1. Department of Computer Science (CSC)
 2. Department of Microbiology (MCB)
-3. Department of Biochemistry (BCH)
-4. Department of Pure and Applied Chemistry (CHM)
-5. Department of Physics (PHY)
-6. Department of Geology (GLY)
+3. Department of Pure and Applied Chemistry (CHM)
+4. Department of Physics (PHY)
+5. Department of Geology (GLY)
+6. Department of Mathematics and Statistics (MTH)
 7. Department of Biological Sciences (BIO)
 
 Additionally, FSARAP includes an interactive self-assessment engine where lecturers publish course quizzes and students complete timed tests with instant auto-grading, pass/fail status, and explanation feedback.
@@ -34,7 +34,7 @@ Additionally, FSARAP includes an interactive self-assessment engine where lectur
 ### 2.2 Repository & Material Management (FR-REPO)
 - **FR-REPO-1**: Lecturers and Admins can upload lecture materials in PDF, DOCX, PPTX, ZIP, PNG, and JPG formats (up to 100MB per file).
 - **FR-REPO-2**: Materials are stored in cloud object buckets via Supabase Storage, with fallback local storage streaming.
-- **FR-REPO-3**: System provides advanced filtering by Department, Academic Level (100L–500L), Semester, Session, Category, and File Format.
+- **FR-REPO-3**: System provides advanced filtering by Department, Academic Level (100L–400L), Semester, Session, Category, and File Format.
 - **FR-REPO-4**: Students can bookmark materials for quick access from their dashboard.
 - **FR-REPO-5**: System audits all material downloads and updates real-time download counters via database triggers.
 

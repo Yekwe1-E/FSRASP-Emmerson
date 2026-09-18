@@ -126,7 +126,108 @@ const escapeHtml = (str) => {
   })[m]);
 };
 
-// Initialize Theme on Script Load
+// ─────────────────────────────────────────────────────────────────────────────
+// PWA & HYBRID ONLINE/OFFLINE ENGINE
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Register Service Worker for PWA Offline Caching
+const initServiceWorker = () => {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((reg) => {
+          console.log('[PWA] ServiceWorker registered with scope:', reg.scope);
+        })
+        .catch((err) => {
+          console.warn('[PWA] ServiceWorker registration failed:', err);
+        });
+    });
+  }
+};
+
+// Render Dynamic Online / Offline Network Status Badge in Navbar
+const renderNetworkStatusBadge = () => {
+  const navbarBrand = document.querySelector('.nav-brand');
+  if (!navbarBrand) return;
+
+  let badge = document.getElementById('fsarap-network-status-badge');
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.id = 'fsarap-network-status-badge';
+    badge.style.marginLeft = '0.75rem';
+    badge.style.padding = '0.2rem 0.6rem';
+    badge.style.borderRadius = '20px';
+    badge.style.fontSize = '0.75rem';
+    badge.style.fontWeight = '600';
+    badge.style.display = 'inline-flex';
+    badge.style.alignItems = 'center';
+    badge.style.gap = '0.3rem';
+    badge.style.transition = 'all 0.3s ease';
+    
+    // Insert after NDU badge
+    navbarBrand.appendChild(badge);
+  }
+
+  const isOnline = navigator.onLine;
+  if (isOnline) {
+    badge.style.backgroundColor = 'rgba(16, 185, 129, 0.15)';
+    badge.style.color = '#10b981';
+    badge.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+    badge.innerHTML = '🟢 Cloud Online';
+    badge.title = 'Connected to FSARAP Cloud Server (Render / Supabase)';
+  } else {
+    badge.style.backgroundColor = 'rgba(245, 158, 11, 0.15)';
+    badge.style.color = '#f59e0b';
+    badge.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+    badge.innerHTML = '🟠 Offline Mode (PWA)';
+    badge.title = 'Running on Local Service Worker PWA Cache & IndexedDB';
+  }
+};
+
+// Sync Offline Saved Quiz Attempts when Network Re-connects
+const syncOfflineQuizAttempts = async () => {
+  const offlineQueue = JSON.parse(localStorage.getItem('fsarap_offline_attempts') || '[]');
+  if (offlineQueue.length === 0) return;
+
+  showToast(`Syncing ${offlineQueue.length} offline quiz attempt(s) with cloud server...`, 'info');
+  const remaining = [];
+
+  for (const item of offlineQueue) {
+    try {
+      if (typeof apiCall === 'function') {
+        await apiCall(`/quizzes/${item.quizId}/submit`, 'POST', {
+          attemptId: item.attemptId,
+          answers: item.answers
+        });
+        showToast(`Synced attempt for quiz: ${item.quizTitle || 'Quiz'}`, 'success');
+      }
+    } catch (err) {
+      console.error('Failed to sync offline attempt:', err);
+      remaining.push(item);
+    }
+  }
+
+  localStorage.setItem('fsarap_offline_attempts', JSON.stringify(remaining));
+};
+
+// Setup Online / Offline Network Event Listeners
+const setupNetworkListeners = () => {
+  window.addEventListener('online', () => {
+    renderNetworkStatusBadge();
+    showToast('🌐 Internet connection restored. FSARAP is Cloud Online!', 'success');
+    syncOfflineQuizAttempts();
+  });
+
+  window.addEventListener('offline', () => {
+    renderNetworkStatusBadge();
+    showToast('📶 You are offline. FSARAP PWA Engine is actively serving cached resources.', 'warning');
+  });
+};
+
+// Initialize Features on Script Load
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
+  initServiceWorker();
+  renderNetworkStatusBadge();
+  setupNetworkListeners();
 });

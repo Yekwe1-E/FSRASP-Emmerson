@@ -476,7 +476,7 @@ WHERE d.code = 'BIO' AND l.level_code = '100' AND s.code = 'SEM1'
 ON CONFLICT (course_code) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
--- SEED LECTURE MATERIALS ACROSS ALL 8 DEPARTMENTS
+-- SEED LECTURE MATERIALS ACROSS ALL 7 DEPARTMENTS
 -- -----------------------------------------------------------------------------
 INSERT INTO materials (title, description, course_id, department_id, level_id, semester_id, session_id, uploader_id, category, file_url, file_path, file_type, file_size, approval_status)
 SELECT 'CSC 111 Comprehensive Lecture Notes', 'Introduction to computer science fundamentals, boolean logic, and algorithms.', c.id, c.department_id, c.level_id, c.semester_id, s.id, u.id, 'Lecture Notes', '/uploads/CSC111_Notes.pdf', 'CSC111_Notes.pdf', 'pdf', 2450000, 'approved'
